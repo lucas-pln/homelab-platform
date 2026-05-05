@@ -1,0 +1,12 @@
+#packer
+.pkrvars.hcl
+.auto.pkrvars.hcl
+
+#terraform
+*.tfvars
+*.tfvars.json
+*.auto.tfvars
+*.auto.tfvars.json
+*.tfstate
+*.tfstate.json
+.terraform/
