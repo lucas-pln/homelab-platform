@@ -1,6 +1,6 @@
 #packer
-.pkrvars.hcl
-.auto.pkrvars.hcl
+*.pkrvars.hcl
+*.auto.pkrvars.hcl
 
 #terraform
 *.tfvars
