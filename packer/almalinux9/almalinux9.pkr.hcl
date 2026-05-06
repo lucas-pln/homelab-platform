@@ -9,7 +9,6 @@ packer {
 
 source "proxmox-iso" "almalinux9" {
 
-  proxmox_url              = var.proxmox_url
   insecure_skip_tls_verify = true
 
   node    = "proxmox"

@@ -1,6 +1,8 @@
 #packer
 *.pkrvars.hcl
 *.auto.pkrvars.hcl
+!*.pkrvars.hcl.example
+!*.auto.pkrvars.hcl.example
 
 #terraform
 *.tfvars
@@ -8,5 +10,10 @@
 *.auto.tfvars
 *.auto.tfvars.json
 *.tfstate
-*.tfstate.json
+*.tfstate.*
 .terraform/
+
+#env
+.env
+.env.*
+!.env.example

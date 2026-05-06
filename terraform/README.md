@@ -8,7 +8,7 @@ This test is read-only. It does not create, modify, or delete any Proxmox resour
 
 ## Files
 
-text```
+```text
 terraform/
 ├── main.tf
 ├── variables.tf
