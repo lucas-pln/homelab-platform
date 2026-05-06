@@ -11,7 +11,7 @@ Credentials are not stored in the Packer files. The Proxmox API token is injecte
 ```text
 packer/
 └──almalinux9
-    ├── main.tf
-    ├── variables.tf
-    └── terraform.tfvars.example
+    ├── almalinux9.pkr.hcl
+    ├── variables.pkr.hcl
+    └── variables.auto.pkrvars.hcl.example
 ```
