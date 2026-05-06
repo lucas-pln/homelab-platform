@@ -62,8 +62,8 @@ The lab currently focuses on:
 | Area | Status |
 |---|---|
 | Repository structure | In progress |
-| Packer template | Planned |
-| Terraform provisioning | Planned |
+| Packer template | In progress |
+| Terraform provisioning | In progress |
 | cloud-init configuration | Planned |
 | Ansible baseline | Planned |
 | OPNsense firewall VM | Future |
