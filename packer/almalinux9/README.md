@@ -42,20 +42,25 @@ scsi_controller = "virtio-scsi-single"
 
 This also allows `io_thread` support.
 
-### Static installer network
+### DHCP-based installer network
 
-DHCP is not yet part of the lab network, so the installer uses a static IP during installation.
+During installation, the VM receives its temporary network configuration from the lab DHCP server:
 
-Current values:
+DHCP server: network.lab.home.arpa
+DNS server:  10.10.10.53
+Domain:      lab.home.arpa
+DHCP range:  10.10.10.100-199
+Gateway:     10.10.10.1
+
+The Kickstart network configuration uses DHCP:
 
 ```text
-VM template IP:  10.10.10.101
-Gateway:         10.10.10.1
-Interface:       enp6s18
-Kickstart HTTP:  port 8800
+network --bootproto=dhcp --device=link --activate --onboot=on --hostname=almalinux9-template.lab.home.arpa
 ```
 
-This will later be replaced with a cleaner DHCP reservation.
+This keeps the template clean and avoids baking a fixed IP address into the image.
+
+The temporary DHCP address is only used during the Packer build. Final networking is expected to be handled later by Terraform and cloud-init.
 
 ### Kickstart over temporary HTTP
 

@@ -10,12 +10,9 @@ packer {
 locals {
   http_directory = "${path.root}/http"
 
-  # MVP workaround for nested Hyper-V/Proxmox lab.
-  # Static IP is used because the internal vSwitch currently has no DHCP.
-  # This should later be replaced by proper networking. 
   boot_command = [
     "<up>e<down><down><end>",
-    " inst.text inst.ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/ks.cfg ip=10.10.10.101::10.10.10.1:255.255.255.0:${var.vm_name}:enp6s18:none",
+    " inst.text inst.ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/ks.cfg",
     "<leftCtrlOn>x<leftCtrlOff>"
   ]
 }
