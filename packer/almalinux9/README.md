@@ -30,7 +30,7 @@ Secure Boot is disabled for the moment:
 pre_enrolled_keys = false
 ```
 
-It will most probably be added later during a separate hardening stage.
+Secure Boot support may be added later as a separate image-hardening improvement.
 
 ### SCSI disk with VirtIO SCSI single
 
@@ -60,7 +60,8 @@ network --bootproto=dhcp --device=link --activate --onboot=on --hostname=almalin
 
 This keeps the template clean and avoids baking a fixed IP address into the image.
 
-The temporary DHCP address is only used during the Packer build. Final networking is expected to be handled later by Terraform and cloud-init.
+The temporary DHCP address is only used during the Packer build. 
+Final VM network identity is expected to be provided later through Terraform-managed Proxmox cloud-init settings and applied by cloud-init on first boot.
 
 ### Kickstart over temporary HTTP
 
@@ -104,6 +105,36 @@ NetworkManager
 dnf-plugins-core
 ```
 
+## Provisioning and Cleanup Flow
+
+After the operating system is installed through Kickstart, Packer connects to the VM using the temporary `packer` user created during installation.
+
+Packer then runs provisioners to prepare the VM before it is converted into a template.
+
+The current provisioning flow is:
+
+```text
+Kickstart install
+→ Packer SSH connection
+→ Package update
+→ Template cleanup
+→ Convert VM to template
+```
+
+### Package update
+
+Packer runs `scripts/update.sh` after the Kickstart installation to update installed packages during image creation.
+
+This keeps the base template current at build time instead of relying on cloned VMs to perform large first-boot updates.
+
+### Template cleanup
+
+Packer runs `scripts/cleanup.sh` before converting the VM into a template.
+
+The cleanup script removes build-time state such as package caches, temporary files, installer logs, cloud-init state, SSH host keys, machine identity, random seed state, and temporary Packer access.
+
+This helps ensure cloned VMs receive fresh identity and do not inherit build artifacts from the image build process.
+
 ## Files
 
 ```text
@@ -114,6 +145,9 @@ packer/
     ├── variables.auto.pkrvars.hcl.example
     ├── http/
     │   └── ks.cfg
+    ├── scripts/
+    │   ├── cleanup.sh
+    │   └── update.sh
     └── README.md
 ```
 
@@ -129,22 +163,23 @@ This is a working MVP, not a production-grade image pipeline yet.
 
 Current temporary choices:
 
-- Static IP in the Packer boot command.
-- Kickstart configures static IP.
-- SSH uses `packer/packer` lab user with password authentication.
+- SSH uses `packer` lab user with static SSH key authentication.
+- The temporary `packer` user is disabled instead of deleted, because it is still active during the final Packer SSH session.
 - Proxmox TLS verification is disabled with `insecure_skip_tls_verify = true`.
 - Secure Boot is not enabled yet.
-- No cleanup steps before templating..
 
 ## Planned improvements
 
 Short-term:
 
-- Replace password authentication with SSH key authentication.
-- Remove `packer` user and add cleanup steps before templating.
+- Add CI checks for `packer fmt` and `packer validate`.
+- Add basic build validation after template creation.
+- Improve documentation around the Kickstart, Packer provisioner, and cleanup responsibilities.
 
 Later improvements:
 
-- Replace the static IP with DHCP.
-- Add CI checks for `packer fmt` and `packer validate`.
-- Secure Boot support.
+- Add Secure Boot support.
+- Generate a temporary SSH keypair per build instead of relying on a static local build key.
+- Inject the temporary public key dynamically into Kickstart during the build.
+- Run Packer builds from a CI/CD pipeline instead of a manual shell session.
+- Scan, test, and promote templates before they are used by Terraform.

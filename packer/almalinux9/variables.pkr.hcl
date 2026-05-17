@@ -114,18 +114,18 @@ variable "boot_wait" {
 }
 
 variable "communicator" {
-  type = string
+  type    = string
   default = "ssh"
 }
 
 variable "ssh_username" {
-  type = string
+  type    = string
   default = "packer"
 }
 
 variable "private_key_file" {
-  type    = string
-  sensitive = true 
+  type      = string
+  sensitive = true
 }
 
 variable "ssh_timeout" {

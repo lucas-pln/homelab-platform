@@ -59,8 +59,8 @@ source "proxmox-iso" "almalinux9" {
     pre_enrolled_keys = false # Not including Secure Boot yet in this MVP
   }
 
-  boot_wait      = var.boot_wait
-  boot_command   = local.boot_command
+  boot_wait    = var.boot_wait
+  boot_command = local.boot_command
 
   communicator         = var.communicator
   ssh_username         = var.ssh_username
@@ -76,4 +76,14 @@ source "proxmox-iso" "almalinux9" {
 build {
   name    = var.build_name
   sources = ["source.proxmox-iso.almalinux9"]
+
+  provisioner "shell" {
+    scripts         = ["scripts/update.sh"]
+    execute_command = "sudo bash '{{ .Path }}'"
+  }
+
+  provisioner "shell" {
+    scripts         = ["scripts/cleanup.sh"]
+    execute_command = "sudo bash '{{ .Path }}'"
+  }
 }
