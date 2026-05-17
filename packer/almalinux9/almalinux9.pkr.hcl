@@ -61,9 +61,12 @@ source "proxmox-iso" "almalinux9" {
 
   boot_wait      = var.boot_wait
   boot_command   = local.boot_command
-  ssh_username   = var.ssh_username
-  ssh_password   = var.ssh_password
-  ssh_timeout    = var.ssh_timeout
+
+  communicator         = var.communicator
+  ssh_username         = var.ssh_username
+  ssh_private_key_file = var.private_key_file
+  ssh_timeout          = var.ssh_timeout
+
   http_directory = local.http_directory
   http_port_min  = var.http_port_min
   http_port_max  = var.http_port_max

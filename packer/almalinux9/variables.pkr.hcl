@@ -113,16 +113,19 @@ variable "boot_wait" {
   default = "5s"
 }
 
+variable "communicator" {
+  type = string
+  default = "ssh"
+}
+
 variable "ssh_username" {
-  type    = string
+  type = string
   default = "packer"
 }
 
-# Lab-only for initial Packer SSH validation.
-# To replace with SSH key-based auth in a later hardening stage.
-variable "ssh_password" {
+variable "private_key_file" {
   type    = string
-  default = "packer"
+  sensitive = true 
 }
 
 variable "ssh_timeout" {
