@@ -108,6 +108,21 @@ variable "efi_type" {
   default = "4m"
 }
 
+variable "cloud_init" {
+  type    = bool
+  default = true
+}
+
+variable "cloud_init_storage_pool" {
+  type    = string
+  default = "local-lvm"
+}
+
+variable "cloud_init_disk_type" {
+  type    = string
+  default = "ide"
+}
+
 variable "boot_wait" {
   type    = string
   default = "5s"

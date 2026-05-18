@@ -59,6 +59,10 @@ source "proxmox-iso" "almalinux9" {
     pre_enrolled_keys = false # Not including Secure Boot yet in this MVP
   }
 
+  cloud_init              = var.cloud_init
+  cloud_init_storage_pool = var.cloud_init_storage_pool
+  cloud_init_disk_type    = var.cloud_init_disk_type
+
   boot_wait    = var.boot_wait
   boot_command = local.boot_command
 
