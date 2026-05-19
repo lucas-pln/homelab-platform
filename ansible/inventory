@@ -1,0 +1,6 @@
+[test]
+almalinux9-clone.lab.home.arpa
+
+[all:vars]
+ansible_user=ansible
+ansible_become=true
