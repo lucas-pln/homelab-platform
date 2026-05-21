@@ -1,102 +1,122 @@
 # Homelab Platform
 
-This repository contains a personal infrastructure automation lab built around Proxmox, Linux, Packer, Kickstart, Bash, Terraform, cloud-init, and Ansible.
+Personal Proxmox homelab for building reusable AlmaLinux 9 templates and cloning disposable virtual machines.
 
-The goal is to build a small but realistic VM provisioning platform: network services provide name resolution and addressing, Packer and Kickstart build reusable Linux templates, Bash cleanup scripts prepare images for safe cloning, Terraform provisions VMs, cloud-init applies first-boot identity, and Ansible configures the operating system after deployment.
-
-This project is both a learning lab and a portfolio project for Linux Systems Administration, SRE, and Platform Engineering roles.
-
-## Current Focus
-
-The Packer image build is functional and produces a reusable Proxmox template. 
-
-The next step is to add a cleanup phase before conversion to template, so cloned VMs do not inherit temporary build artifacts.
+Current workflow:
 
 ```text
-DNS/DHCP → Packer → Kickstart → [Bash cleanup] → Proxmox template
+dnsmasq DNS/DHCP
+  → Packer
+  → Kickstart
+  → template cleanup
+  → Proxmox template
+  → Terraform clone
+  → cloud-init first boot
 ```
 
-### What Works Today
+This repository tracks the build-out of a small infrastructure automation workflow. The focus is on reproducible VM builds, clean template cloning, first-boot identity, configuration management, validation, and recovery.
 
-- Static lab infrastructure nodes are defined with fixed IPs.
-- A DNS/DHCP node provides internal lab name resolution and DHCP leases.
-- Packer builds an AlmaLinux 9 VM template on Proxmox.
-- Kickstart automates the AlmaLinux installation during the Packer build.
-- The build now uses DHCP instead of a baked static installer IP.
-- The template includes `qemu-guest-agent` and `cloud-init` for Proxmox integration and future first-boot customization.
+## Current State
 
-### Known Gaps
+| Component | State | Notes |
+|---|---|---|
+| DNS/DHCP | Implemented manually | `dnsmasq` provides lab DNS and DHCP leases |
+| Image build | Implemented | Packer builds an AlmaLinux 9 VM on Proxmox |
+| OS installation | Implemented | Kickstart automates the AlmaLinux install |
+| Template cleanup | Implemented | Bash scripts prepare the image before template conversion |
+| VM provisioning | Implemented | Terraform clones one disposable VM pattern |
+| First boot config | Implemented | cloud-init sets hostname, FQDN, user access and SSH key|
+| Ansible baseline | Not implemented yet | Planned for post-provisioning config and hardening |
+| CI validation | Not implemented yet | Planned for format and validation checks |
+| IPAM/DNS automation | Not implemented yet | DNS records are still handled manually |
+| Backup/recovery validation | Not implemented yet | Planned after the provisioning path is stable |
+| Monitoring/logging | Not implemented yet | Future scope |
 
-- Template cleanup before conversion is still minimal.
-- Post-build validation is not automated yet.
-- Terraform, cloud-init, and Ansible integration are not complete yet.
+## What Works Today
 
-## Lab Architecture
+The current repo can:
 
-| Node | IP | Role |
-|---|---:|---|
-| Workstation NAT gateway | `10.10.10.1` | Temporary lab gateway provided by the Windows workstation |
-| network.lab.home.arpa | `10.10.10.53` | DNS/DHCP node using dnsmasq |
-| control.lab.home.arpa | `10.10.10.10` | Automation node for Git, Packer, Terraform, and Ansible |
-| proxmox.lab.home.arpa | `10.10.10.20` | Proxmox virtualization host |
-| DHCP range | `10.10.10.100-199` | Temporary build and disposable VMs |
+- build an AlmaLinux 9 Proxmox template with Packer
+- automate the OS install with Kickstart
+- use DHCP during the image build
+- install `qemu-guest-agent` and `cloud-init` in the template
+- clean the VM before converting it into a reusable template
+- clone a disposable VM from that template with Terraform
+- upload and attach cloud-init user-data
+- apply first-boot identity and access settings with cloud-init
 
-## Provisioning Workflow
+## Architecture
+
+The lab uses a small set of infrastructure nodes:
+
+| Node | Role |
+|---|---|
+| Lab gateway | Provides NAT/routing for the isolated lab network |
+| DNS/DHCP node | Provides internal DNS and DHCP with dnsmasq |
+| Control node | Runs Git, Packer, Terraform, and future Ansible automation |
+| Proxmox node | Hosts templates and disposable VMs |
+| Disposable VMs | Cloned from the AlmaLinux 9 template through Terraform |
+
+Example lab addressing:
+
+| Purpose | Address |
+|---|---:|
+| Lab gateway | `10.10.10.1` |
+| DNS/DHCP node | `10.10.10.53` |
+| Control node | `10.10.10.10` |
+| Proxmox node | `10.10.10.20` |
+| DHCP range | `10.10.10.100-199` |
+
+## Provisioning Flow
 
 ```text
 1. Packer creates a temporary VM on Proxmox.
 2. The VM receives a DHCP lease from dnsmasq.
-3. The AlmaLinux installer downloads Kickstart over HTTP.
+3. The AlmaLinux installer downloads the Kickstart file over temporary HTTP.
 4. Kickstart installs the OS and baseline packages.
 5. Packer validates SSH access.
-6. A cleanup phase prepares the image for safe cloning.
+6. Packer runs update and cleanup scripts.
 7. The VM is converted into a reusable Proxmox template.
-8. Terraform will later clone VMs from the template.
-9. cloud-init will apply first-boot identity and access settings.
-10. Ansible will configure and harden the deployed systems.
+8. Terraform clones a disposable VM from the template.
+9. Terraform uploads and attaches a cloud-init user-data snippet.
+10. cloud-init applies first-boot identity and access settings.
 ```
 
-## Tools
+Ansible will be added later for post-provisioning configuration, validation, and hardening.
 
-| Tool | Purpose |
-|---|---|
-| Proxmox | Virtualization platform |
-| dnsmasq | Lab DNS and DHCP |
-| Packer | Builds reusable VM templates |
-| Kickstart | Automates AlmaLinux installation |
-| Bash | Template cleanup and helper automation scripts |
-| Terraform | Provisions VMs from templates |
-| cloud-init | Applies first-boot VM identity and access settings |
-| Ansible | Configures and hardens systems after provisioning |
-| Git | Tracks infrastructure code and documentation |
-
-## Repository Structure
+## Repository Layout
 
 ```text
 .
-├── ansible/
-├── cloud-init/
-├── docs/
+├── ansible/              # Planned post-provisioning automation
+├── cloud-init/           # Planned cloud-init examples and templates
+├── docs/                 # Architecture notes, decisions, and runbooks
 ├── packer/
-│   └── almalinux9/
-├── scripts/
-├── terraform/
-├── .env.example
-├── .envrc
+│   └── almalinux9/       # AlmaLinux 9 Proxmox template build
+├── scripts/              # Planned helper scripts
+├── terraform/            # Proxmox VM provisioning
+├── .env.example          # Example local environment variables
+├── .envrc                # direnv loader
 ├── .gitignore
 └── README.md
 ```
 
-## Current Status
+## Next Work
 
-| Area | Status |
-|---|---|
-| Repository structure | In progress |
-| DNS/DHCP lab services | MVP implemented manually |
-| AlmaLinux 9 Packer template | Functional MVP, cleanup pending |
-| Terraform provisioning | Planned |
-| cloud-init customization | Planned |
-| Ansible baseline | Planned |
-| Monitoring | Future |
-| Centralized logging | Future |
-| Backup/restore testing | Future |
+Short term:
+
+- add an Ansible baseline role for common Linux configuration
+- generate or document Ansible inventory from Terraform outputs
+- add GitHub Actions for formatting and validation checks
+- add post-provisioning validation
+- improve credential handling documentation
+
+Later:
+
+- manage DNS records through Terraform or IPAM integration
+- support multiple disposable VMs using `count` or `for_each`
+- introduce identity and access management patterns
+- add backup and recovery validation
+- add monitoring with Prometheus and Grafana
+- add centralized logging
+- improve least-privilege Proxmox automation
