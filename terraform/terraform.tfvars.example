@@ -1,0 +1,7 @@
+domain = "lab.example.com"
+
+ansible_ssh_public_key = "ssh-ed25519 <AAAA_REPLACE_ME> <USER@EXAMPLE>"
+
+node_name = "my_proxmox"
+
+proxmox_ssh_address = "172.168.10.50"

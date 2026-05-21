@@ -1,21 +1,21 @@
-terraform {
-  required_providers {
-    proxmox = {
-      source  = "bpg/proxmox"
-      version = "0.106.0"
-    }
+resource "proxmox_virtual_environment_file" "user_data_cloud_config" {
+  content_type = "snippets"
+  datastore_id = "local"
+  node_name    = "proxmox"
+
+  source_raw {
+    data      = local.user_data
+    file_name = "${local.hostname}-user-data.yaml"
   }
 }
 
-provider "proxmox" {
-
-  insecure = true
-}
-
-resource "proxmox_virtual_environment_vm" "almalinux9_clone" {
-  name      = "almalinux9-clone"
-  node_name = "proxmox"
+resource "proxmox_virtual_environment_vm" "almalinux9_test_clone" {
+  name      = local.hostname
+  node_name = var.node_name
   vm_id     = 101
+  machine   = "q35"
+  bios      = "ovmf"
+
 
   clone {
     vm_id        = 9001
@@ -34,29 +34,20 @@ resource "proxmox_virtual_environment_vm" "almalinux9_clone" {
 
   agent {
     enabled = true
+
+    wait_for_ip {
+      ipv4 = true
+    }
+  }
+
+  network_device {
+    bridge = "vmbr0"
   }
 
   initialization {
-
-    datastore_id = "local-lvm"
-    upgrade      = false
-
-    user_account {
-      username = "ansible"
-      keys     = [trimspace(file("~/.ssh/ansible/ansible-user.pub"))]
-    }
-
-    ip_config {
-      ipv4 {
-        address = "dhcp"
-      }
-    }
+    user_data_file_id = proxmox_virtual_environment_file.user_data_cloud_config.id
   }
 
   started = true
 
-}
-
-output "ip_address" {
-  value = proxmox_virtual_environment_vm.almalinux9_clone.ipv4_addresses[1][0]
 }
