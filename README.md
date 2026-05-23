@@ -92,7 +92,6 @@ Ansible will be added later for post-provisioning configuration, validation, and
 ├── docs/                 # Architecture notes, decisions, and runbooks
 ├── packer/
 │   └── almalinux9/       # AlmaLinux 9 Proxmox template build
-├── scripts/              # Planned helper scripts
 ├── terraform/            # Proxmox VM provisioning
 ├── .env.example          # Example local environment variables
 ├── .envrc                # direnv loader
