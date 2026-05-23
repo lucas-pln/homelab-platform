@@ -1,0 +1,18 @@
+# Normalize text files
+* text=auto
+
+# Use LF for infrastructure and documentation files
+*.md text eol=lf
+*.sh text eol=lf
+*.bash text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.tf text eol=lf
+*.tfvars text eol=lf
+*.hcl text eol=lf
+*.json text eol=lf
+*.service text eol=lf
+*.cfg text eol=lf
+*.conf text eol=lf
+*.ks text eol=lf
+*.tftpl text eol=lf
