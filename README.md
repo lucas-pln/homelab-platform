@@ -89,7 +89,6 @@ Ansible will be added later for post-provisioning configuration, validation, and
 ```text
 .
 ├── ansible/              # Planned post-provisioning automation
-├── docs/                 # Architecture notes, decisions, and runbooks
 ├── packer/
 │   └── almalinux9/       # AlmaLinux 9 Proxmox template build
 ├── terraform/            # Proxmox VM provisioning
