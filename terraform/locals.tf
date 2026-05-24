@@ -13,4 +13,6 @@ locals {
     fqdn                   = local.fqdn
     ansible_ssh_public_key = var.ansible_ssh_public_key
   })
+
+  disk_serial = "${local.hostname}-data-01"
 }

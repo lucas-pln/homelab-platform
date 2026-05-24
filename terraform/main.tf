@@ -1,6 +1,6 @@
 resource "proxmox_virtual_environment_file" "user_data_cloud_config" {
   content_type = var.content_type
-  datastore_id = var.datastore_id
+  datastore_id = var.file_datastore_id
   node_name    = var.node_name
 
   source_raw {
@@ -10,8 +10,9 @@ resource "proxmox_virtual_environment_file" "user_data_cloud_config" {
 }
 
 resource "proxmox_virtual_environment_vm" "almalinux9_test_clone" {
-  name      = local.hostname
-  node_name = var.node_name
+  name        = local.hostname
+  node_name   = var.node_name
+  description = "${local.hostname} - Managed by Terraform"
 
   machine = var.machine
   bios    = var.bios
@@ -31,8 +32,20 @@ resource "proxmox_virtual_environment_vm" "almalinux9_test_clone" {
     dedicated = var.dedicated_memory
   }
 
+  disk {
+    interface    = var.disk_interface
+    datastore_id = var.disk_datastore_id
+    size         = var.disk_size
+    iothread     = var.disk_io_thread
+    serial       = local.disk_serial
+  }
+
   agent {
     enabled = var.agent_enabled
+
+    wait_for_ip {
+      ipv4 = var.ipv4
+    }
   }
 
   network_device {

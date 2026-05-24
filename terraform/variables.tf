@@ -4,7 +4,7 @@ variable "content_type" {
   default     = "snippets"
 }
 
-variable "datastore_id" {
+variable "file_datastore_id" {
   type        = string
   description = "Proxmox datastore used to store the rendered cloud-init snippet."
   default     = "local"
@@ -61,6 +61,30 @@ variable "dedicated_memory" {
   type        = number
   description = "Dedicated memory assigned to the cloned VM, in MiB."
   default     = 2048
+}
+
+variable "disk_interface" {
+  type        = string
+  description = "Bus type used for the additional data-disk."
+  default     = "scsi1"
+}
+
+variable "disk_datastore_id" {
+  type        = string
+  description = "Proxmox storage pool where the additional data-disk is created."
+  default     = "local-lvm"
+}
+
+variable "disk_size" {
+  type        = string
+  description = "Size of the additional data-disk created"
+  default     = "10G"
+}
+
+variable "disk_io_thread" {
+  type        = bool
+  description = "Enables IO threads for compatible disk controllers; set false if using an incompatible SCSI controller."
+  default     = true
 }
 
 variable "agent_enabled" {

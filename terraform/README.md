@@ -20,7 +20,7 @@ This configuration currently handles:
 - cloud-init attachment
 - VM startup after provisioning
 
-It currently provisions one disposable VM pattern.
+It currently provisions one disposable VM.
 
 ## Files
 
@@ -73,9 +73,10 @@ The rendered user-data is attached to the cloned VM and handles first-boot confi
 - FQDN
 - user creation
 - SSH authorized key injection
-- DHCP hostname refresh
+- DHCP hostname refresh through NetworkManager connection reactivation
 
 The DHCP refresh exists because cloned VM may receive a DHCP lease before its final hostname is fully applied.
+After cloud-init sets the hostname, it brings the guest network connection back up so the next DHCP request can include the final hostname for DHCP/DNS registration.
 
 ## Proxmox SSH Access
 
@@ -92,7 +93,7 @@ Planned improvements:
 ## Current Limitations
 
 - assumes the Proxmox template already exists
-- provisions one disposable VM pattern
+- workflow works only for one disposable VM
 - does not manage DNS records yet
 - does not generate Ansible inventory yet
 - does not include CI validation yet
@@ -100,16 +101,13 @@ Planned improvements:
 
 ## Next Work
 
-Short term:
-
-- keep `terraform.tfvars.example` aligned with required variables
-- add clearer outputs for VM name, FQDN, IP address, and SSH target
-- add GitHub Actions checks for Terraform formatting and validation
-- document how Terraform outputs will feed Ansible inventory
+- add an SSH target output for the Ansible user
+- add CI checks for Terraform formatting and validation
+- document or generate the Ansible inventory handoff
 
 Later:
 
-- support multiple disposable VMs with `count` or `for_each`
-- manage DNS records or integrate with IPAM
-- split reusable defaults from local lab values
-- replace lab-only root SSH with a more restricted automation model
+- support more than one disposable VM per apply
+- integrate DNS/IPAM instead of relying only on DHCP registration
+- separate reusable defaults from local lab values
+- replace root SSH access with a restricted Proxmox automation user
