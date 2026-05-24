@@ -15,6 +15,7 @@ echo "[Cleanup] Cleaning installer/build logs"
 
 rm -f /root/ks-post.log
 rm -f /root/anaconda-ks.cfg
+rm -f /root/original-ks.cfg
 
 echo "[Cleanup] Cleaning cloud-init state"
 

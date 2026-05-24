@@ -55,7 +55,7 @@ Gateway:     10.10.10.1
 The Kickstart network configuration uses DHCP:
 
 ```text
-network --bootproto=dhcp --device=link --activate --onboot=on --hostname=almalinux9-template.lab.home.arpa
+network --bootproto=dhcp --device=link --activate --onboot=on
 ```
 
 This keeps the template clean and avoids baking a fixed IP address into the image.
@@ -84,21 +84,23 @@ sudo firewall-cmd --permanent --add-rich-rule='rule family="ipv4" source address
 sudo firewall-cmd --reload
 ```
 
-### Baseline packages
+### Baseline package set
 
-The build process installs a small baseline of packages for system administration, Proxmox integration, cloning, and Ansible management:
+Kickstart installs the AlmaLinux minimal environment and then adds the packages the template needs for Proxmox integration, cloud-init, Ansible access, and day-to-day administration:
 
 ```text
+@^minimal-environment
 qemu-guest-agent
 cloud-init
-cloud-utils-growpart
-openssh-server
-sudo
 python3
 python3-libselinux
-curl / wget / rsync / tar / gzip
+curl
+wget
+rsync
 vim-enhanced
 bash-completion
+bind-utils
+traceroute
 chrony
 firewalld
 NetworkManager
