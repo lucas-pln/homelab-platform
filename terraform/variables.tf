@@ -78,7 +78,7 @@ variable "disk_datastore_id" {
 variable "disk_size" {
   type        = string
   description = "Size of the additional data-disk created"
-  default     = "10G"
+  default     = "10"
 }
 
 variable "disk_io_thread" {

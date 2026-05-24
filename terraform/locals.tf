@@ -4,6 +4,10 @@ resource "random_pet" "vm_name" {
   separator = "-"
 }
 
+resource "random_id" "disk_serial" {
+  byte_length = 10
+}
+
 locals {
   hostname = random_pet.vm_name.id
   fqdn     = "${local.hostname}.${var.domain}"
@@ -14,5 +18,5 @@ locals {
     ansible_ssh_public_key = var.ansible_ssh_public_key
   })
 
-  disk_serial = "${local.hostname}-data-01"
+  disk_serial = random_id.disk_serial.hex
 }
