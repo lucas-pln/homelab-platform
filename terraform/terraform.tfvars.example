@@ -4,4 +4,4 @@ ansible_ssh_public_key = "ssh-ed25519 <AAAA_REPLACE_ME> <USER@EXAMPLE>"
 
 node_name = "my_proxmox"
 
-proxmox_ssh_address = "172.168.10.50"
+proxmox_ssh_address = "192.168.10.50"

@@ -1,7 +1,7 @@
 resource "proxmox_virtual_environment_file" "user_data_cloud_config" {
-  content_type = "snippets"
-  datastore_id = "local"
-  node_name    = "proxmox"
+  content_type = var.content_type
+  datastore_id = var.datastore_id
+  node_name    = var.node_name
 
   source_raw {
     data      = local.user_data
@@ -12,42 +12,37 @@ resource "proxmox_virtual_environment_file" "user_data_cloud_config" {
 resource "proxmox_virtual_environment_vm" "almalinux9_test_clone" {
   name      = local.hostname
   node_name = var.node_name
-  vm_id     = 101
-  machine   = "q35"
-  bios      = "ovmf"
 
+  machine = var.machine
+  bios    = var.bios
 
   clone {
-    vm_id        = 9001
-    full         = true
-    datastore_id = "local-lvm"
+    vm_id        = var.clone_vm_id
+    full         = var.clone_full
+    datastore_id = var.clone_datastore_id
   }
 
   cpu {
-    cores = 2
-    type  = "x86-64-v2-AES"
+    cores = var.cores
+    type  = var.cpu_type
   }
 
   memory {
-    dedicated = 2048
+    dedicated = var.dedicated_memory
   }
 
   agent {
-    enabled = true
-
-    wait_for_ip {
-      ipv4 = true
-    }
+    enabled = var.agent_enabled
   }
 
   network_device {
-    bridge = "vmbr0"
+    bridge = var.network_bridge
   }
 
   initialization {
     user_data_file_id = proxmox_virtual_environment_file.user_data_cloud_config.id
   }
 
-  started = true
+  started = var.started
 
 }
