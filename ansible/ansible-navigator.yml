@@ -1,0 +1,26 @@
+---
+ansible-navigator:
+  ansible:
+    config:
+      path: ./ansible.cfg
+    inventory:
+      entries:
+      - ./inventory/proxmox.proxmox.yml
+  execution-environment:
+    container-engine: podman
+    environment-variables:
+      pass:
+      - PROXMOX_ANSIBLE_PROXMOX_URL
+      - PROXMOX_ANSIBLE_USER
+      - PROXMOX_ANSIBLE_TOKEN_ID
+      - PROXMOX_ANSIBLE_TOKEN_SECRET
+    image: localhost/homelab-ansible-ee:1.0.0
+    pull:
+      policy: never
+  mode: stdout
+  playbook-artifact:
+    enable: true
+    save-as: "artifacts/{playbook_name}-artifact-{time_stamp}.json"
+  logging:
+    level: warning
+    file: ".ansible-navigator.log"

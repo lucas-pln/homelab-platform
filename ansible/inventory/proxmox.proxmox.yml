@@ -1,0 +1,23 @@
+---
+plugin: community.proxmox.proxmox
+
+url: "{{ lookup('env', 'PROXMOX_ANSIBLE_PROXMOX_URL') }}"
+user: "{{ lookup('env', 'PROXMOX_ANSIBLE_USER') }}"
+token_id: "{{ lookup('env', 'PROXMOX_ANSIBLE_TOKEN_ID') }}"
+token_secret: "{{ lookup('env', 'PROXMOX_ANSIBLE_TOKEN_SECRET') }}"
+
+validate_certs: false
+exclude_nodes: true
+want_facts: true
+
+filters:
+  - "(proxmox_template | default(0) | int) == 0"
+
+compose:
+  ansible_host: proxmox_name
+
+keyed_groups:
+  - key: proxmox_status
+    prefix: status
+  - key: proxmox_vmtype
+    prefix: vmtype
