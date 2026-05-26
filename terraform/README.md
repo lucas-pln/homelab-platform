@@ -17,8 +17,10 @@ This configuration currently handles:
 - Proxmox snippet upload
 - VM cloning from an existing AlmaLinux 9 template
 - CPU, memory, disk, network, BIOS, and guest-agent settings
+- configurable additional VM data disk
 - cloud-init attachment
 - VM startup after provisioning
+- VM hostname, FQDN, and IPv4 outputs
 
 It currently provisions one disposable VM.
 
@@ -95,15 +97,11 @@ Planned improvements:
 - assumes the Proxmox template already exists
 - workflow works only for one disposable VM
 - does not manage DNS records yet
-- does not generate Ansible inventory yet
-- does not include CI validation yet
 - does not fully implement least-privilege Proxmox access yet
 
 ## Next Work
 
-- add an SSH target output for the Ansible user
-- add CI checks for Terraform formatting and validation
-- document or generate the Ansible inventory handoff
+- document how Terraform-created VMs appear in the Proxmox dynamic inventory
 
 Later:
 

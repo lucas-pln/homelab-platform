@@ -26,8 +26,9 @@ This repository tracks the build-out of a small infrastructure automation workfl
 | Template cleanup | Implemented | Bash scripts prepare the image before template conversion |
 | VM provisioning | Implemented | Terraform clones one disposable VM pattern |
 | First boot config | Implemented | cloud-init sets hostname, FQDN, user access and SSH key|
+| Ansible tooling | Partially implemented | Execution environment, Proxmox dynamic inventory, and ping validation exist |
 | Ansible baseline | Not implemented yet | Planned for post-provisioning config and hardening |
-| CI validation | Not implemented yet | Planned for format and validation checks |
+| CI validation | Implemented | GitHub Actions runs Packer, ShellCheck, and Terraform validation checks |
 | IPAM/DNS automation | Not implemented yet | DNS records are still handled manually |
 | Backup/recovery validation | Not implemented yet | Planned after the provisioning path is stable |
 | Monitoring/logging | Not implemented yet | Future scope |
@@ -44,6 +45,8 @@ The current repo can:
 - clone a disposable VM from that template with Terraform
 - upload and attach cloud-init user-data
 - apply first-boot identity and access settings with cloud-init
+- provide a Proxmox-backed Ansible dynamic inventory and ping validation playbook
+- run CI checks for Packer, shell scripts, and Terraform
 
 ## Architecture
 
@@ -53,7 +56,7 @@ The lab uses a small set of infrastructure nodes:
 |---|---|
 | Lab gateway | Provides NAT/routing for the isolated lab network |
 | DNS/DHCP node | Provides internal DNS and DHCP with dnsmasq |
-| Control node | Runs Git, Packer, Terraform, and future Ansible automation |
+| Control node | Runs Git, Packer, Terraform, and Ansible automation |
 | Proxmox node | Hosts templates and disposable VMs |
 | Disposable VMs | Cloned from the AlmaLinux 9 template through Terraform |
 
@@ -82,13 +85,13 @@ Example lab addressing:
 10. cloud-init applies first-boot identity and access settings.
 ```
 
-Ansible will be added later for post-provisioning configuration, validation, and hardening.
+Ansible tooling exists for inventory and connectivity validation. A baseline role for post-provisioning configuration and hardening is still planned.
 
 ## Repository Layout
 
 ```text
 .
-├── ansible/              # Planned post-provisioning automation
+├── ansible/              # Execution environment, inventory, and validation playbooks
 ├── packer/
 │   └── almalinux9/       # AlmaLinux 9 Proxmox template build
 ├── terraform/            # Proxmox VM provisioning
@@ -103,9 +106,8 @@ Ansible will be added later for post-provisioning configuration, validation, and
 Short term:
 
 - add an Ansible baseline role for common Linux configuration
-- generate or document Ansible inventory from Terraform outputs
-- add GitHub Actions for formatting and validation checks
 - add post-provisioning validation
+- expand CI coverage as new automation is added
 - improve credential handling documentation
 
 Later:

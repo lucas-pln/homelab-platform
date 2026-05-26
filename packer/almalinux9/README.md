@@ -174,7 +174,6 @@ Current temporary choices:
 
 Short-term:
 
-- Add CI checks for `packer fmt` and `packer validate`.
 - Add basic build validation after template creation.
 - Improve documentation around the Kickstart, Packer provisioner, and cleanup responsibilities.
 
