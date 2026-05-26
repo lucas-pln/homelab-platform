@@ -8,6 +8,7 @@ artifacts/
 *.auto.pkrvars.hcl
 !*.pkrvars.hcl.example
 !*.auto.pkrvars.hcl.example
+!homelab-platform-ci-test.pkrvars.hcl
 
 #terraform
 *.tfvars

@@ -1,0 +1,57 @@
+name: homelab-platform CI
+
+permissions:
+  contents: read
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+  workflow_dispatch:
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Setup Packer
+        uses: hashicorp/setup-packer@v3.2.0
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v4
+
+      - name: Install ShellCheck
+        run: sudo apt-get update && sudo apt-get install -y shellcheck
+
+      - name: Run Packer checks
+        working-directory: packer/almalinux9
+        env:
+          PROXMOX_URL: "https://proxmox.example.invalid:8006/api2/json"
+          PROXMOX_USERNAME: "ci-username"
+          PROXMOX_TOKEN: "ci-token"
+        run: |
+          ssh-keygen -t ed25519 -f /tmp/packer-ci-key -N "" -q
+          packer init .
+          packer fmt -check .
+          packer validate -var-file=homelab-platform-ci-test.pkrvars.hcl .
+
+      - name: Run script checks
+        working-directory: packer/almalinux9/scripts
+        run: |
+          shellcheck update.sh
+          shellcheck cleanup.sh
+
+      - name: Run Terraform checks
+        working-directory: terraform
+        run: |
+          terraform init -backend=false
+          terraform fmt -check -recursive
+          terraform validate
