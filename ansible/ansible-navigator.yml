@@ -23,4 +23,4 @@ ansible-navigator:
     save-as: "artifacts/{playbook_name}-artifact-{time_stamp}.json"
   logging:
     level: warning
-    file: ".ansible-navigator.log"
+    file: "ansible-navigator.log"

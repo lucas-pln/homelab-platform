@@ -1,7 +1,7 @@
 #ansible
 context/
 artifacts/
-.ansible-navigator.log
+ansible-navigator.log
 
 #packer
 *.pkrvars.hcl
