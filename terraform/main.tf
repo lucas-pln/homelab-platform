@@ -13,7 +13,7 @@ resource "proxmox_virtual_environment_vm" "almalinux9_clone" {
   name        = local.hostname
   node_name   = var.node_name
   description = "${local.hostname} - Managed by Terraform"
-  tags        = ["managed_by_terraform","os_almalinux9","env_lab"]
+  tags        = ["managed_by_terraform", "os_almalinux9", "env_lab"]
 
 
   machine = var.machine
