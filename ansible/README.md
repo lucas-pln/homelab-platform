@@ -1,8 +1,8 @@
-# Ansible MVP
+# Ansible Automation
 
-This directory contains the current Ansible MVP for the homelab platform.
+This directory contains the Ansible automation for the homelab platform.
 
-The implemented scope is inventory, execution environment configuration, and basic connectivity validation. It does not yet include a baseline role for post-provisioning configuration or hardening.
+The implemented scope is execution environment configuration, Proxmox dynamic inventory, connectivity validation, and pre-baseline template clone validation. It does not yet include a baseline role for post-provisioning configuration or hardening.
 
 ## Current State
 
@@ -14,6 +14,34 @@ This directory currently provides:
 - pinned Galaxy collections and Python dependencies
 - Proxmox dynamic inventory using `community.proxmox.proxmox`
 - a `ping.yml` playbook for validating managed host connectivity
+- a `template-validate.yml` playbook for validating newly provisioned template clones before baseline configuration
+
+## Playbooks
+
+| Playbook | Purpose |
+|---|---|
+| `playbooks/ping.yml` | Validates basic Ansible connectivity to managed hosts |
+| `playbooks/template-validate.yml` | Validates newly provisioned template clones before baseline configuration |
+
+## Template Validation
+
+`template-validate.yml` runs against the `terraform_managed` inventory group after Terraform provisioning and before baseline configuration.
+
+It validates:
+
+- temporary Packer access is disabled
+- Packer build artifacts are absent
+- machine identity was regenerated on first boot
+- cloud-init completed successfully
+- hostname and FQDN are applied
+- FQDN resolves to the VM IPv4 address
+- default IPv4 route is present
+
+The playbook writes a local report under:
+
+```text
+artifacts/template-validate/
+```
 
 ## Authentication
 
@@ -38,5 +66,5 @@ Do not commit real Proxmox credentials, API tokens, SSH keys, or generated artif
 ## Next Work
 
 - add a common Linux baseline role
-- add post-provisioning validation beyond ping
+- expand template validation as new template guarantees are added
 - document the expected execution environment build/run workflow

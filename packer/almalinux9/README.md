@@ -137,6 +137,8 @@ The cleanup script removes build-time state such as package caches, temporary fi
 
 This helps ensure cloned VMs receive fresh identity and do not inherit build artifacts from the image build process.
 
+The cleanup result is validated after Terraform cloning by the Ansible template validation playbook.
+
 ## Files
 
 ```text
@@ -174,7 +176,7 @@ Current temporary choices:
 
 Short-term:
 
-- Add basic build validation after template creation.
+- Add deeper image promotion checks before templates are consumed by Terraform.
 - Improve documentation around the Kickstart, Packer provisioner, and cleanup responsibilities.
 
 Later improvements:

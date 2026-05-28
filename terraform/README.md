@@ -80,6 +80,12 @@ The rendered user-data is attached to the cloned VM and handles first-boot confi
 The DHCP refresh exists because cloned VM may receive a DHCP lease before its final hostname is fully applied.
 After cloud-init sets the hostname, it brings the guest network connection back up so the next DHCP request can include the final hostname for DHCP/DNS registration.
 
+## Ansible Handoff
+
+Terraform tags the cloned VM so the Proxmox dynamic inventory can place it in the `terraform_managed` group.
+
+After provisioning, Ansible can run template validation against that group before applying any baseline configuration.
+
 ## Proxmox SSH Access
 
 This lab currently uses SSH access to the Proxmox node for provider-side file/snippet operations.
@@ -100,8 +106,6 @@ Planned improvements:
 - does not fully implement least-privilege Proxmox access yet
 
 ## Next Work
-
-- document how Terraform-created VMs appear in the Proxmox dynamic inventory
 
 Later:
 

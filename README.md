@@ -12,6 +12,7 @@ dnsmasq DNS/DHCP
   → Proxmox template
   → Terraform clone
   → cloud-init first boot
+  → Ansible validation
 ```
 
 This repository tracks the build-out of a small infrastructure automation workflow. The focus is on reproducible VM builds, clean template cloning, first-boot identity, configuration management, validation, and recovery.
@@ -26,7 +27,7 @@ This repository tracks the build-out of a small infrastructure automation workfl
 | Template cleanup | Implemented | Bash scripts prepare the image before template conversion |
 | VM provisioning | Implemented | Terraform clones one disposable VM pattern |
 | First boot config | Implemented | cloud-init sets hostname, FQDN, user access and SSH key|
-| Ansible tooling | Partially implemented | Execution environment, Proxmox dynamic inventory, and ping validation exist |
+| Ansible tooling | Implemented | Execution environment, Proxmox dynamic inventory, connectivity validation, and template clone validation exist |
 | Ansible baseline | Not implemented yet | Planned for post-provisioning config and hardening |
 | CI validation | Implemented | GitHub Actions runs Packer, ShellCheck, and Terraform validation checks |
 | IPAM/DNS automation | Not implemented yet | DNS records are still handled manually |
@@ -45,7 +46,9 @@ The current repo can:
 - clone a disposable VM from that template with Terraform
 - upload and attach cloud-init user-data
 - apply first-boot identity and access settings with cloud-init
-- provide a Proxmox-backed Ansible dynamic inventory and ping validation playbook
+- provide a Proxmox-backed Ansible dynamic inventory
+- validate managed host connectivity with Ansible
+- validate newly cloned template VMs before baseline configuration
 - run CI checks for Packer, shell scripts, and Terraform
 
 ## Architecture
@@ -83,9 +86,11 @@ Example lab addressing:
 8. Terraform clones a disposable VM from the template.
 9. Terraform uploads and attaches a cloud-init user-data snippet.
 10. cloud-init applies first-boot identity and access settings.
+11. Ansible dynamic inventory discovers Terraform-managed running VMs.
+12. Ansible validates template clone state before baseline configuration.
 ```
 
-Ansible tooling exists for inventory and connectivity validation. A baseline role for post-provisioning configuration and hardening is still planned.
+Ansible tooling exists for inventory, connectivity validation, and pre-baseline template clone validation. A baseline role for post-provisioning configuration and hardening is still planned.
 
 ## Repository Layout
 
@@ -106,7 +111,7 @@ Ansible tooling exists for inventory and connectivity validation. A baseline rol
 Short term:
 
 - add an Ansible baseline role for common Linux configuration
-- add post-provisioning validation
+- expand template validation as new template guarantees are added
 - expand CI coverage as new automation is added
 - improve credential handling documentation
 
