@@ -36,12 +36,9 @@ echo "[Cleanup] Removing SSH host keys"
 
 rm -f /etc/ssh/ssh_host_*key*
 
-echo "[Cleanup] Removing temporary Packer access"
+echo "[Cleanup] Removing temporary root access"
 
-rm -f /etc/sudoers.d/packer
-rm -rf /home/packer/.ssh || true
-passwd -l packer || true
-usermod -s /sbin/nologin packer || true
+rm -rf /root/.ssh
 
 echo "[Cleanup] Cleaning system logs"
 
@@ -51,8 +48,9 @@ journalctl --vacuum-time=1s || true
 
 echo "[Cleanup] Cleaning shell and download history"
 
-rm -f /root/.wget-hsts /root/.bash_history
-rm -f /home/packer/.wget-hsts /home/packer/.bash_history 2>/dev/null || true
+rm -f /root/.wget-hsts || true
+rm -f /root/.bash_history || true
+
 unset HISTFILE
 history -c || true
 

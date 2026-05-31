@@ -83,11 +83,11 @@ build {
 
   provisioner "shell" {
     scripts         = ["scripts/update.sh"]
-    execute_command = "sudo bash '{{ .Path }}'"
+    execute_command = "bash '{{ .Path }}'"
   }
 
   provisioner "shell" {
     scripts         = ["scripts/cleanup.sh"]
-    execute_command = "sudo bash '{{ .Path }}'"
+    execute_command = "bash '{{ .Path }}'"
   }
 }

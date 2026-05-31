@@ -159,8 +159,8 @@ variable "communicator" {
 
 variable "ssh_username" {
   type        = string
-  description = "SSH user created by Kickstart and used by Packer provisioners."
-  default     = "packer"
+  description = "SSH user used by Packer provisioners."
+  default     = "root"
 }
 
 variable "private_key_file" {
