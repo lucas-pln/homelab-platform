@@ -18,10 +18,6 @@ locals {
 }
 
 source "proxmox-iso" "almalinux9" {
-
-  # Lab-only for initial Packer MVP. Need proper TLS certificate in a later hardening stage. 
-  insecure_skip_tls_verify = true
-
   node            = var.node
   vm_name         = var.vm_name
   vm_id           = var.vm_id
