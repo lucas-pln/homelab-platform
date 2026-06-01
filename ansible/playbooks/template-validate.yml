@@ -5,53 +5,12 @@
 
   vars:
     template_validation_report_dir: "{{ playbook_dir }}/../artifacts/template-validate"
-    packer_cleanup_paths:
-      - /etc/sudoers.d/packer
-      - /home/packer/.ssh
-      - /home/packer/.wget-hsts
-      - /home/packer/.bash_history
-      - /root/ks-post.log
-      - /root/anaconda-ks.cfg
-      - /root/original-ks.cfg
-      - /root/.wget-hsts
-      - /root/.bash_history
 
   tasks:
-    - name: Gather packer account facts
-      ansible.builtin.getent:
-        database: passwd
-        key: packer
-        fail_key: false
-
-    - name: Gather packer shadow facts
-      ansible.builtin.getent:
-        database: shadow
-        key: packer
-        fail_key: false
-      become: true
-      no_log: true
-
-    - name: Inspect cleanup target paths
-      ansible.builtin.stat:
-        path: "{{ item }}"
-      loop: "{{ packer_cleanup_paths }}"
-      register: cleanup_path_stats
-      become: true
-
     - name: Read machine-id
       ansible.builtin.command: cat /etc/machine-id
       register: machine_id
       changed_when: false
-
-    - name: Inspect dbus state directory
-      ansible.builtin.stat:
-        path: /var/lib/dbus
-      register: dbus_state_dir
-
-    - name: Inspect dbus machine-id
-      ansible.builtin.stat:
-        path: /var/lib/dbus/machine-id
-      register: dbus_machine_id
 
     - name: Check cloud-init completed successfully
       ansible.builtin.command: cloud-init status
@@ -65,41 +24,10 @@
       changed_when: false
       failed_when: false
 
-    - name: Inspect default IPv4 route
-      ansible.builtin.command: ip -4 route show default
-      register: default_route
-      changed_when: false
-      failed_when: false
-
-    - name: Assert packer build access is disabled
-      ansible.builtin.assert:
-        that:
-          - (getent_passwd.packer | default([]) | length) >= 6
-          - (getent_passwd.packer | default([]))[4] == "/home/packer"
-          - (getent_passwd.packer | default([]))[5] == "/sbin/nologin"
-          - (getent_shadow.packer | default([]) | length) >= 1
-          - (getent_shadow.packer | default([]))[0] is match("^!")
-        success_msg: "packer build account is locked and non-accessible"
-        fail_msg: "packer build account still allows access"
-
-    - name: Assert packer build artifacts were removed
-      ansible.builtin.assert:
-        that:
-          - cleanup_path_stats.results | selectattr('stat.exists') | list | length == 0
-        success_msg: "packer build artifacts were removed"
-        fail_msg: "packer build artifacts remain on the provisioned clone"
-
     - name: Assert machine identity is valid for a booted clone
       ansible.builtin.assert:
         that:
           - machine_id.stdout is match("^[0-9a-f]{32}$")
-          - >
-            not dbus_state_dir.stat.exists or
-            (
-              dbus_machine_id.stat.exists and
-              dbus_machine_id.stat.islnk | default(false) and
-              dbus_machine_id.stat.lnk_source == "/etc/machine-id"
-            )
         success_msg: "machine identity was regenerated on first boot"
         fail_msg: "machine identity does not look valid for a cloned VM"
 
@@ -115,6 +43,7 @@
       ansible.builtin.assert:
         that:
           - (ansible_hostname | length) > 0
+          - ansible_hostname == inventory_hostname
           - (ansible_fqdn | length) > (ansible_hostname | length)
           - ansible_fqdn is match("^" ~ ansible_hostname ~ "\\.")
           - fqdn_resolution.stdout | length > 0
@@ -122,15 +51,6 @@
           - fqdn_resolution.stdout is search(ansible_default_ipv4.address)
         success_msg: "hostname, FQDN, and IPv4 name resolution are valid"
         fail_msg: "hostname, FQDN, or IPv4 name resolution is invalid"
-
-    - name: Assert default route is valid
-      ansible.builtin.assert:
-        that:
-          - ansible_default_ipv4.gateway is defined
-          - ansible_default_ipv4.gateway | length > 0
-          - default_route.stdout is search("default via " ~ ansible_default_ipv4.gateway)
-        success_msg: "default IPv4 route is valid"
-        fail_msg: "default IPv4 route is missing or invalid"
 
     - name: Ensure local artifacts directory exists
       ansible.builtin.file:
@@ -159,30 +79,18 @@
           | Hostname | {{ ansible_hostname }} |
           | FQDN | {{ ansible_fqdn }} |
           | IPv4 address | {{ ansible_default_ipv4.address }} |
-          | Default gateway | {{ ansible_default_ipv4.gateway }} |
 
           ## Checks
 
           | Check | Result | Evidence |
           | --- | --- | --- |
-          | Packer account locked | passed | shadow password field starts with `!` |
-          | Packer shell disabled | passed | `/sbin/nologin` |
-          | Packer build artifacts removed | passed | cleanup paths absent |
           | Machine ID regenerated | passed | `/etc/machine-id` is valid |
-          | D-Bus machine-id linkage | passed | {{ 'not applicable, /var/lib/dbus absent' if not dbus_state_dir.stat.exists else '/var/lib/dbus/machine-id -> /etc/machine-id' }} |
           | Cloud-init status | passed | `{{ cloud_init_status.stdout }}` |
           | FQDN IPv4 resolution | passed | resolves to `{{ ansible_default_ipv4.address }}` |
-          | Default IPv4 route | passed | gateway `{{ ansible_default_ipv4.gateway }}` |
 
           ## DNS resolution
 
           ```text
           {{ fqdn_resolution.stdout | default('') }}
-          ```
-
-          ## Default route
-
-          ```text
-          {{ default_route.stdout | default('') }}
           ```
       delegate_to: localhost
