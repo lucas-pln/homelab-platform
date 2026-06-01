@@ -15,6 +15,10 @@ locals {
     " inst.text inst.ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/ks.cfg",
     "<leftCtrlOn>x<leftCtrlOff>"
   ]
+
+  build_date = formatdate("YYYYMMDD", timestamp())
+
+  metadata_file = "artifacts/${local.build_date}-${var.template_os}${var.template_major_version}-build-${var.template_role}.json"
 }
 
 source "proxmox-iso" "almalinux9" {
@@ -78,12 +82,27 @@ build {
   sources = ["source.proxmox-iso.almalinux9"]
 
   provisioner "shell" {
-    scripts         = ["scripts/update.sh"]
-    execute_command = "bash '{{ .Path }}'"
+    scripts = ["scripts/00-install-template-packages.sh"]
   }
 
   provisioner "shell" {
-    scripts         = ["scripts/cleanup.sh"]
-    execute_command = "bash '{{ .Path }}'"
+    scripts = ["scripts/10-write-template-metadata.sh"]
+
+    environment_vars = [
+      "TEMPLATE_OS=${var.template_os}",
+      "TEMPLATE_MAJOR_VERSION=${var.template_major_version}",
+      "TEMPLATE_ROLE=${var.template_role}",
+      "ISO_CHECKSUM=${var.checksum}"
+    ]
+  }
+
+  provisioner "file" {
+    direction   = "download"
+    source      = "/etc/template-build.json"
+    destination = local.metadata_file
+  }
+
+  provisioner "shell" {
+    scripts = ["scripts/20-finalize-template.sh"]
   }
 }

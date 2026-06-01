@@ -192,3 +192,21 @@ variable "build_name" {
   description = "Name assigned to the Packer build and resulting AlmaLinux base template."
   default     = "tpl-almalinux9-base"
 }
+
+variable "template_os" {
+  type        = string
+  description = "Operating system name written into template metadata during provisioning."
+  default     = "almalinux"
+}
+
+variable "template_major_version" {
+  type        = number
+  description = "Major operating system version written into template metadata during provisioning."
+  default     = 9
+}
+
+variable "template_role" {
+  type        = string
+  description = "Role label written into template metadata during provisioning."
+  default     = "role-neutral"
+}
