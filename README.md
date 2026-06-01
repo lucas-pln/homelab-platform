@@ -8,14 +8,26 @@ Current workflow:
 dnsmasq DNS/DHCP
   → Packer
   → Kickstart
-  → template cleanup
+  → template package install and cleanup
   → Proxmox template
   → Terraform clone
   → cloud-init first boot
   → Ansible validation
 ```
 
-This repository tracks the build-out of a small infrastructure automation workflow. The focus is on reproducible VM builds, clean template cloning, first-boot identity, configuration management, validation, and recovery.
+This repository tracks a small Proxmox automation workflow: build an AlmaLinux template, clone a VM, configure first boot, and validate the result.
+
+## How To Read This Repo
+
+This is a homelab portfolio project, so the repository is organized around clear ownership boundaries rather than a single all-in-one automation script:
+
+- Packer builds the reusable AlmaLinux 9 Proxmox template.
+- Kickstart performs the unattended OS installation during the Packer build.
+- Packer shell provisioners add template integration packages, write build metadata, and clean build-time state.
+- Terraform clones one disposable VM from the template and attaches cloud-init user-data.
+- cloud-init handles first-boot identity, user access, and SSH policy inside the cloned VM.
+- Ansible currently validates connectivity and first-boot clone state; it does not yet apply a post-provisioning baseline role.
+- CI runs static validation for Packer, shell scripts, and Terraform. It does not run a live Proxmox build.
 
 ## Current State
 
@@ -24,31 +36,32 @@ This repository tracks the build-out of a small infrastructure automation workfl
 | DNS/DHCP | Implemented manually | `dnsmasq` provides lab DNS and DHCP leases |
 | Image build | Implemented | Packer builds an AlmaLinux 9 VM on Proxmox |
 | OS installation | Implemented | Kickstart automates the AlmaLinux install |
-| Template cleanup | Implemented | Bash scripts prepare the image before template conversion |
-| VM provisioning | Implemented | Terraform clones one disposable VM pattern |
-| First boot config | Implemented | cloud-init sets hostname, FQDN, user access and SSH key|
-| Ansible tooling | Implemented | Execution environment, Proxmox dynamic inventory, connectivity validation, and template clone validation exist |
+| Template cleanup | Implemented | Bash provisioners install template packages, write metadata, and finalize the image before template conversion |
+| VM provisioning | Implemented | Terraform creates one full disposable VM clone with generated naming, tags, and cloud-init user-data |
+| First boot config | Implemented | cloud-init sets hostname, FQDN, `ansible` user access, SSH key, and root/SSH password policy |
+| Ansible tooling | Implemented | Execution environment, Proxmox dynamic inventory, connectivity validation, and clone validation exist |
 | Ansible baseline | Not implemented yet | Planned for post-provisioning config and hardening |
 | CI validation | Implemented | GitHub Actions runs Packer, ShellCheck, and Terraform validation checks |
 | IPAM/DNS automation | Not implemented yet | DNS records are still handled manually |
 | Backup/recovery validation | Not implemented yet | Planned after the provisioning path is stable |
-| Monitoring/logging | Not implemented yet | Future scope |
 
 ## What Works Today
 
 The current repo can:
 
 - build an AlmaLinux 9 Proxmox template with Packer
-- automate the OS install with Kickstart
+- automate the minimal OS install with Kickstart
 - use DHCP during the image build
 - install `qemu-guest-agent` and `cloud-init` in the template
+- write template metadata to `/etc/template-build.json` and download a local build artifact
 - clean the VM before converting it into a reusable template
-- clone a disposable VM from that template with Terraform
+- clone one full disposable VM from that template with Terraform
 - upload and attach cloud-init user-data
-- apply first-boot identity and access settings with cloud-init
+- apply first-boot identity, `ansible` user access, SSH key, and login policy with cloud-init
+- tag Terraform-created VMs for Ansible inventory discovery
 - provide a Proxmox-backed Ansible dynamic inventory
 - validate managed host connectivity with Ansible
-- validate newly cloned template VMs before baseline configuration
+- validate first-boot identity, cloud-init completion, hostname/FQDN, and IPv4 DNS resolution before baseline configuration
 - run CI checks for Packer, shell scripts, and Terraform
 
 ## Architecture
@@ -79,18 +92,20 @@ Example lab addressing:
 1. Packer creates a temporary VM on Proxmox.
 2. The VM receives a DHCP lease from dnsmasq.
 3. The AlmaLinux installer downloads the Kickstart file over temporary HTTP.
-4. Kickstart installs the OS and baseline packages.
-5. Packer validates SSH access.
-6. Packer runs update and cleanup scripts.
-7. The VM is converted into a reusable Proxmox template.
-8. Terraform clones a disposable VM from the template.
-9. Terraform uploads and attaches a cloud-init user-data snippet.
-10. cloud-init applies first-boot identity and access settings.
-11. Ansible dynamic inventory discovers Terraform-managed running VMs.
-12. Ansible validates template clone state before baseline configuration.
+4. Kickstart installs the AlmaLinux minimal environment.
+5. Packer validates root SSH access.
+6. Packer installs template integration packages.
+7. Packer writes `/etc/template-build.json` and downloads it into local build artifacts.
+8. Packer finalizes the image by cleaning build-time state before template conversion.
+9. The VM is converted into a reusable Proxmox template.
+10. Terraform creates one full disposable VM clone from the template.
+11. Terraform uploads and attaches a cloud-init user-data snippet.
+12. cloud-init applies first-boot identity, access, and SSH policy.
+13. Ansible dynamic inventory discovers Terraform-managed running VMs by Proxmox tags.
+14. Ansible validates clone state before baseline configuration.
 ```
 
-Ansible tooling exists for inventory, connectivity validation, and pre-baseline template clone validation. A baseline role for post-provisioning configuration and hardening is still planned.
+Ansible currently handles inventory, connectivity checks, and clone validation. A baseline configuration role is not implemented yet.
 
 ## Repository Layout
 
@@ -108,19 +123,9 @@ Ansible tooling exists for inventory, connectivity validation, and pre-baseline 
 
 ## Next Work
 
-Short term:
-
 - add an Ansible baseline role for common Linux configuration
-- expand template validation as new template guarantees are added
-- expand CI coverage as new automation is added
+- expand clone validation as new template guarantees are added
 - improve credential handling documentation
-
-Later:
-
-- manage DNS records through Terraform or IPAM integration
-- support multiple disposable VMs using `count` or `for_each`
-- introduce identity and access management patterns
-- add backup and recovery validation
-- add monitoring with Prometheus and Grafana
-- add centralized logging
 - improve least-privilege Proxmox automation
+- support multiple disposable VMs using `count` or `for_each`
+- manage DNS records through Terraform or IPAM integration

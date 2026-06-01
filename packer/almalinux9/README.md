@@ -1,8 +1,8 @@
 # Packer AlmaLinux 9 Minimal Template
 
-This directory contains a Packer configuration to build an AlmaLinux 9 VM template on Proxmox using the `proxmox-iso` builder. 
+This directory contains a Packer configuration to build an AlmaLinux 9 VM template on Proxmox using the `proxmox-iso` builder.
 
-The current state validates a complete image-build workflow:
+The current state implements a working image-build workflow:
 
 ```text
 Packer → Proxmox VM → AlmaLinux ISO → Kickstart install → SSH validation → Proxmox template
@@ -12,8 +12,7 @@ Packer → Proxmox VM → AlmaLinux ISO → Kickstart install → SSH validation
 
 ### AlmaLinux DVD ISO
 
-The build uses the AlmaLinux DVD ISO rather than the minimal ISO. The DVD ISO is larger, but it provides a better offline package source during Kickstart installation.
-This avoids build failures caused by missing packages such as `qemu-guest-agent`, `cloud-init`, or other tools.
+The build uses the AlmaLinux DVD ISO rather than the minimal ISO. The DVD ISO is larger, but it provides package availability for the minimal OS install and the later Packer package installation step.
 
 ### UEFI / OVMF
 
@@ -46,11 +45,13 @@ This also allows `io_thread` support.
 
 During installation, the VM receives its temporary network configuration from the lab DHCP server:
 
+```text
 DHCP server: network.lab.home.arpa
 DNS server:  10.10.10.53
 Domain:      lab.home.arpa
 DHCP range:  10.10.10.100-199
 Gateway:     10.10.10.1
+```
 
 The Kickstart network configuration uses DHCP:
 
@@ -60,8 +61,8 @@ network --bootproto=dhcp --device=link --activate --onboot=on
 
 This keeps the template clean and avoids baking a fixed IP address into the image.
 
-The temporary DHCP address is only used during the Packer build. 
-Final VM network identity is expected to be provided later through Terraform-managed Proxmox cloud-init settings and applied by cloud-init on first boot.
+The temporary DHCP address is only used during the Packer build.
+Terraform provides the final hostname and FQDN through cloud-init when a VM is cloned.
 
 ### Kickstart over temporary HTTP
 
@@ -86,30 +87,22 @@ sudo firewall-cmd --reload
 
 ### Baseline package set
 
-Kickstart installs the AlmaLinux minimal environment and then adds the packages the template needs for Proxmox integration, cloud-init, Ansible access, and day-to-day administration:
+Kickstart installs only the AlmaLinux minimal environment:
 
 ```text
 @^minimal-environment
+```
+
+Packer then installs the template integration packages currently required by the clone workflow:
+
+```text
 qemu-guest-agent
 cloud-init
-python3
-python3-libselinux
-curl
-wget
-rsync
-vim-enhanced
-bash-completion
-bind-utils
-traceroute
-chrony
-firewalld
-NetworkManager
-dnf-plugins-core
 ```
 
 ## Provisioning and Cleanup Flow
 
-After the operating system is installed through Kickstart, Packer connects to the VM using the temporary `packer` user created during installation.
+After the operating system is installed through Kickstart, Packer connects to the VM as `root` using the SSH key injected by Kickstart.
 
 Packer then runs provisioners to prepare the VM before it is converted into a template.
 
@@ -118,26 +111,34 @@ The current provisioning flow is:
 ```text
 Kickstart install
 → Packer SSH connection
-→ Package update
-→ Template cleanup
+→ Install template packages
+→ Write template metadata
+→ Download metadata artifact
+→ Finalize template
 → Convert VM to template
 ```
 
-### Package update
+### Template packages
 
-Packer runs `scripts/update.sh` after the Kickstart installation to update installed packages during image creation.
+Packer runs `scripts/00-install-template-packages.sh` after the Kickstart installation.
 
-This keeps the base template current at build time instead of relying on cloned VMs to perform large first-boot updates.
+The script installs and enables `qemu-guest-agent` and `cloud-init`, then checks that both are available.
 
-### Template cleanup
+### Template metadata
 
-Packer runs `scripts/cleanup.sh` before converting the VM into a template.
+Packer runs `scripts/10-write-template-metadata.sh` to write `/etc/template-build.json` inside the image.
 
-The cleanup script removes build-time state such as package caches, temporary files, installer logs, cloud-init state, SSH host keys, machine identity, random seed state, and temporary Packer access.
+The metadata includes the template OS, major version, role label, build tool, ISO checksum, and UTC build date. Packer then downloads that file to a local artifact path under `artifacts/`.
+
+### Template finalization
+
+Packer runs `scripts/20-finalize-template.sh` before converting the VM into a template.
+
+The finalization script removes package caches, temporary files, installer logs, cloud-init state, SSH host keys, machine identity, random seed state, root SSH access, system logs, and shell/download history.
 
 This helps ensure cloned VMs receive fresh identity and do not inherit build artifacts from the image build process.
 
-The cleanup result is validated after Terraform cloning by the Ansible template validation playbook.
+First-boot identity, cloud-init completion, hostname/FQDN, and IPv4 DNS resolution are validated after Terraform cloning by the Ansible clone validation playbook.
 
 ## Files
 
@@ -147,11 +148,13 @@ packer/
     ├── almalinux9.pkr.hcl
     ├── variables.pkr.hcl
     ├── variables.auto.pkrvars.hcl.example
+    ├── homelab-platform-ci-test.pkrvars.hcl
     ├── http/
     │   └── ks.cfg
     ├── scripts/
-    │   ├── cleanup.sh
-    │   └── update.sh
+    │   ├── 00-install-template-packages.sh
+    │   ├── 10-write-template-metadata.sh
+    │   └── 20-finalize-template.sh
     └── README.md
 ```
 
@@ -163,13 +166,12 @@ The Proxmox ISO builder supports reading API credentials from environment variab
 
 ## Current limitations
 
-This is a working MVP, not a production-grade image pipeline yet.
+This is a lab implementation, not a production image pipeline.
 
 Current temporary choices:
 
-- SSH uses `packer` lab user with static SSH key authentication.
-- The temporary `packer` user is disabled instead of deleted, because it is still active during the final Packer SSH session.
-- Proxmox TLS verification is disabled with `insecure_skip_tls_verify = true`.
+- SSH uses root key authentication during the build.
+- The build key is static local input rather than generated per build.
 - Secure Boot is not enabled yet.
 
 ## Planned improvements

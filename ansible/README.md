@@ -2,7 +2,7 @@
 
 This directory contains the Ansible automation for the homelab platform.
 
-The implemented scope is execution environment configuration, Proxmox dynamic inventory, connectivity validation, and pre-baseline template clone validation. It does not yet include a baseline role for post-provisioning configuration or hardening.
+The current scope is Ansible configuration, ansible-navigator setup, a local execution environment definition, Proxmox dynamic inventory, connectivity checks, and clone validation. It does not include a baseline configuration role yet.
 
 ## Current State
 
@@ -14,33 +14,31 @@ This directory currently provides:
 - pinned Galaxy collections and Python dependencies
 - Proxmox dynamic inventory using `community.proxmox.proxmox`
 - a `ping.yml` playbook for validating managed host connectivity
-- a `template-validate.yml` playbook for validating newly provisioned template clones before baseline configuration
+- a `clone-validate.yml` playbook for validating newly provisioned clones before baseline configuration
 
 ## Playbooks
 
 | Playbook | Purpose |
 |---|---|
 | `playbooks/ping.yml` | Validates basic Ansible connectivity to managed hosts |
-| `playbooks/template-validate.yml` | Validates newly provisioned template clones before baseline configuration |
+| `playbooks/clone-validate.yml` | Validates newly provisioned clones before baseline configuration |
 
-## Template Validation
+## Clone Validation
 
-`template-validate.yml` runs against the `terraform_managed` inventory group after Terraform provisioning and before baseline configuration.
+`clone-validate.yml` runs against the `terraform_managed` inventory group after Terraform provisioning and before baseline configuration.
 
 It validates:
 
-- temporary Packer access is disabled
-- Packer build artifacts are absent
-- machine identity was regenerated on first boot
+- machine identity is valid after first boot
 - cloud-init completed successfully
-- hostname and FQDN are applied
-- FQDN resolves to the VM IPv4 address
-- default IPv4 route is present
+- hostname is set and matches the inventory hostname
+- FQDN is applied and starts with the hostname
+- FQDN resolves to the VM default IPv4 address
 
 The playbook writes a local report under:
 
 ```text
-artifacts/template-validate/
+artifacts/clone-validate/
 ```
 
 ## Authentication
@@ -54,7 +52,7 @@ PROXMOX_ANSIBLE_TOKEN_ID
 PROXMOX_ANSIBLE_TOKEN_SECRET
 ```
 
-Do not commit real Proxmox credentials, API tokens, SSH keys, or generated artifacts.
+No real Proxmox credentials, API tokens, SSH keys, or generated artifacts committed.
 
 ## Current Limitations
 
@@ -66,5 +64,5 @@ Do not commit real Proxmox credentials, API tokens, SSH keys, or generated artif
 ## Next Work
 
 - add a common Linux baseline role
-- expand template validation as new template guarantees are added
-- document the expected execution environment build/run workflow
+- expand clone validation as new template guarantees are added
+- document how to build and run the Ansible execution environment

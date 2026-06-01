@@ -20,9 +20,15 @@ This configuration currently handles:
 - configurable additional VM data disk
 - cloud-init attachment
 - VM startup after provisioning
+- Proxmox tags for Ansible dynamic inventory discovery
 - VM hostname, FQDN, and IPv4 outputs
 
-It currently provisions one disposable VM.
+It currently provisions one full-clone disposable VM.
+
+Provider versions are pinned in `versions.tf`:
+
+- `bpg/proxmox` `0.106.0`
+- `hashicorp/random` `3.9.0`
 
 ## Files
 
@@ -56,6 +62,7 @@ The Proxmox API token is expected to come from the local shell environment, here
 Example:
 
 ```bash
+export PROXMOX_VE_ENDPOINT="https://your-proxmox-node:8006/"
 export PROXMOX_VE_API_TOKEN="user@realm!token-name=token-secret"
 ```
 
@@ -73,22 +80,24 @@ The rendered user-data is attached to the cloned VM and handles first-boot confi
 
 - hostname
 - FQDN
-- user creation
-- SSH authorized key injection
-- DHCP hostname refresh through NetworkManager connection reactivation
+- `ansible` user creation with passwordless sudo
+- SSH authorized key injection for the `ansible` user
+- root login disablement
+- SSH password authentication disablement
+- NetworkManager refresh for the `enp6s18` DHCP lease
 
 The DHCP refresh exists because cloned VM may receive a DHCP lease before its final hostname is fully applied.
 After cloud-init sets the hostname, it brings the guest network connection back up so the next DHCP request can include the final hostname for DHCP/DNS registration.
 
 ## Ansible Handoff
 
-Terraform tags the cloned VM so the Proxmox dynamic inventory can place it in the `terraform_managed` group.
+Terraform tags the cloned VM with `managed_by_terraform`, `os_almalinux9`, and `env_lab` so the Proxmox dynamic inventory can place it in the `terraform_managed`, `almalinux9`, and `lab` groups.
 
-After provisioning, Ansible can run template validation against that group before applying any baseline configuration.
+After provisioning, Ansible can run clone validation against that group before applying any baseline configuration.
 
 ## Proxmox SSH Access
 
-This lab currently uses SSH access to the Proxmox node for provider-side file/snippet operations.
+Terraform uses SSH to the Proxmox node for file/snippet operations. It currently authenticates as `root` through the SSH agent and sets `insecure = true`.
 
 Planned improvements:
 
