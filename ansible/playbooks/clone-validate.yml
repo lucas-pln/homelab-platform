@@ -1,10 +1,10 @@
 ---
-- name: Validate newly provisioned template clones before baseline configuration
+- name: Validate newly provisioned clones before baseline configuration
   hosts: terraform_managed
   gather_facts: true
 
   vars:
-    template_validation_report_dir: "{{ playbook_dir }}/../artifacts/template-validate"
+    clone_validation_report_dir: "{{ playbook_dir }}/../artifacts/clone-validate"
 
   tasks:
     - name: Read machine-id
@@ -54,22 +54,22 @@
 
     - name: Ensure local artifacts directory exists
       ansible.builtin.file:
-        path: "{{ template_validation_report_dir }}"
+        path: "{{ clone_validation_report_dir }}"
         state: directory
         mode: "0755"
       delegate_to: localhost
 
-    - name: Write local template validation report
+    - name: Write local clone validation report
       ansible.builtin.copy:
-        dest: "{{ template_validation_report_dir }}/{{ inventory_hostname }}.md"
+        dest: "{{ clone_validation_report_dir }}/{{ inventory_hostname }}.md"
         mode: "0644"
         content: |
-          # Template validation report
+          # Clone validation report
 
           | Field | Value |
           | --- | --- |
           | Host | {{ inventory_hostname }} |
-          | Report type | template validation |
+          | Report type | clone validation |
           | Result | passed |
 
           ## Identity
