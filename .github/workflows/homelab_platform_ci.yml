@@ -49,8 +49,9 @@ jobs:
       - name: Run script checks
         working-directory: packer/almalinux9/scripts
         run: |
-          shellcheck update.sh
-          shellcheck cleanup.sh
+          shellcheck 00-install-template-packages.sh
+          shellcheck 10-write-template-metadata.sh
+          shellcheck 20-finalize-template.sh
 
       - name: Run Terraform checks
         working-directory: terraform
