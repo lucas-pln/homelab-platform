@@ -49,6 +49,7 @@ terraform/
 
 - Terraform installed on the control node
 - Proxmox VE reachable from the control node
+- Proxmox VE API certificate trusted by the control node
 - existing AlmaLinux 9 Proxmox template
 - Proxmox API token loaded through environment variables
 - SSH access to the Proxmox node for provider file/snippet operations
@@ -65,6 +66,8 @@ Example:
 export PROXMOX_VE_ENDPOINT="https://your-proxmox-node:8006/"
 export PROXMOX_VE_API_TOKEN="user@realm!token-name=token-secret"
 ```
+
+Terraform validates the Proxmox API TLS certificate. The endpoint hostname must match the certificate, and the control node must trust the issuing CA.
 
 /!\ Do not commit real API tokens, SSH keys, or `.env` files.
 
@@ -97,7 +100,7 @@ After provisioning, Ansible can run clone validation against that group before a
 
 ## Proxmox SSH Access
 
-Terraform uses SSH to the Proxmox node for file/snippet operations. It currently authenticates as `root` through the SSH agent and sets `insecure = true`.
+Terraform uses SSH to the Proxmox node for file/snippet operations. It currently authenticates as `root` through the SSH agent.
 
 Planned improvements:
 
@@ -106,6 +109,7 @@ Planned improvements:
 - limit access to the control node
 - use scoped Proxmox API tokens
 - document the required Proxmox privileges
+- document Proxmox API certificate trust setup
 
 ## Current Limitations
 
