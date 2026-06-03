@@ -21,11 +21,6 @@ build {
     scripts = ["scripts/20-finalize-template.sh"]
   }
 
-  post-processor "checksum" {
-    checksum_types = ["sha256"]
-    output         = "${local.output_dir}/${local.artifact_name}-${source.name}.sha256"
-  }
-
   post-processor "manifest" {
     output     = "${local.output_dir}/manifest-${local.artifact_name}.json"
     strip_path = true
