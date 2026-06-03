@@ -69,7 +69,7 @@ variable "network_bridge" {
   default     = "vmbr0"
 }
 
-variable "boot_iso_type" {
+variable "iso_type" {
   type        = string
   description = "Bus type used to attach the installer ISO; use ide for older legacy ISOs if needed."
   default     = "sata"
@@ -80,7 +80,7 @@ variable "iso_file" {
   description = "Path or storage reference to the AlmaLinux installer ISO in Proxmox."
 }
 
-variable "checksum" {
+variable "iso_checksum" {
   type        = string
   description = "Checksum used by Packer to verify the installer ISO."
 }
@@ -195,18 +195,18 @@ variable "build_name" {
 
 variable "template_os" {
   type        = string
-  description = "Operating system name written into template metadata during provisioning."
+  description = "Operating system name written into build manifest during provisioning."
   default     = "almalinux"
 }
 
 variable "template_major_version" {
   type        = number
-  description = "Major operating system version written into template metadata during provisioning."
+  description = "Major operating system version written into build manifest during provisioning."
   default     = 9
 }
 
 variable "template_role" {
   type        = string
-  description = "Role label written into template metadata during provisioning."
+  description = "Role label written into build manifest during provisioning."
   default     = "role-neutral"
 }

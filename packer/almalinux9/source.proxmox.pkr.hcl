@@ -1,26 +1,3 @@
-packer {
-  required_plugins {
-    proxmox = {
-      version = "1.2.3"
-      source  = "github.com/hashicorp/proxmox"
-    }
-  }
-}
-
-locals {
-  http_directory = "${path.root}/http"
-
-  boot_command = [
-    "<up>e<down><down><end>",
-    " inst.text inst.ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/ks.cfg",
-    "<leftCtrlOn>x<leftCtrlOff>"
-  ]
-
-  build_date = formatdate("YYYYMMDD", timestamp())
-
-  metadata_file = "artifacts/${local.build_date}-${var.template_os}${var.template_major_version}-build-${var.template_role}.json"
-}
-
 source "proxmox-iso" "almalinux9" {
   node            = var.node
   vm_name         = var.vm_name
@@ -39,10 +16,10 @@ source "proxmox-iso" "almalinux9" {
   }
 
   boot_iso {
-    type         = var.boot_iso_type
+    type         = var.iso_type
     iso_file     = var.iso_file
     unmount      = true
-    iso_checksum = var.checksum
+    iso_checksum = var.iso_checksum
   }
 
   disks {
@@ -75,34 +52,4 @@ source "proxmox-iso" "almalinux9" {
   http_port_min  = var.http_port_min
   http_port_max  = var.http_port_max
   qemu_agent     = true
-
-}
-build {
-  name    = var.build_name
-  sources = ["source.proxmox-iso.almalinux9"]
-
-  provisioner "shell" {
-    scripts = ["scripts/00-install-template-packages.sh"]
-  }
-
-  provisioner "shell" {
-    scripts = ["scripts/10-write-template-metadata.sh"]
-
-    environment_vars = [
-      "TEMPLATE_OS=${var.template_os}",
-      "TEMPLATE_MAJOR_VERSION=${var.template_major_version}",
-      "TEMPLATE_ROLE=${var.template_role}",
-      "ISO_CHECKSUM=${var.checksum}"
-    ]
-  }
-
-  provisioner "file" {
-    direction   = "download"
-    source      = "/etc/template-build.json"
-    destination = local.metadata_file
-  }
-
-  provisioner "shell" {
-    scripts = ["scripts/20-finalize-template.sh"]
-  }
 }

@@ -15,19 +15,19 @@ fail() {
 : "${TEMPLATE_ROLE:?TEMPLATE_ROLE is required}"
 : "${ISO_CHECKSUM:?ISO_CHECKSUM is required}"
 
-echo "[META] Write template metadata" 
-cat >/etc/template-build.json <<EOF
+echo "[META] Write embedded build manifest" 
+cat >/etc/template-build-manifest.json <<EOF
 {
   "os": "$TEMPLATE_OS",
   "major_version": "$TEMPLATE_MAJOR_VERSION",
   "build_tool": "packer",
   "template_role": "$TEMPLATE_ROLE",
   "iso_checksum": "$ISO_CHECKSUM",
-  "build_date_utc": "$(date -u +%F)"
+  "build_date_utc": "$(date -u +'%FT%TZ')"
 }
 EOF
 
-echo "[META] Validate template metadata is present"
-[[ -s /etc/template-build.json ]] || fail "template-build.json is missing or is empty"
+echo "[META] Validate embedded build manifest is present"
+[[ -s /etc/template-build-manifest.json ]] || fail "Embedded template-build-manifest.json is missing or is empty"
 
-ok "template metadata file created successfully"
+ok "Embedded build manifest created successfully"
