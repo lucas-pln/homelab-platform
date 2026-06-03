@@ -42,8 +42,8 @@ ok "Removed SSH host keys"
 rm -rf /root/.ssh
 ok "Removed temporary root access"
 
-find /var/log -type f -exec truncate -s 0 {} +
 journalctl --rotate --vacuum-size=0
+find /var/log -type f -exec truncate -s 0 {} +
 ok "Cleaned system logs"
 
 rm -f /root/.wget-hsts
