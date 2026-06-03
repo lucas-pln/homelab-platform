@@ -112,9 +112,9 @@ The current provisioning flow is:
 Kickstart install
 → Packer SSH connection
 → Install template packages
-→ Write template metadata
-→ Download metadata artifact
+→ Write embedded build manifest
 → Finalize template
+→ Write checksum and manifest artifacts
 → Convert VM to template
 ```
 
@@ -124,17 +124,21 @@ Packer runs `scripts/00-install-template-packages.sh` after the Kickstart instal
 
 The script installs and enables `qemu-guest-agent` and `cloud-init`, then checks that both are available.
 
-### Template metadata
+### Template build manifest
 
-Packer runs `scripts/10-write-template-metadata.sh` to write `/etc/template-build.json` inside the image.
+Packer runs `scripts/10-write-template-metadata.sh` to write `/etc/template-build-manifest.json` inside the image.
 
-The metadata includes the template OS, major version, role label, build tool, ISO checksum, and UTC build date. Packer then downloads that file to a local artifact path under `artifacts/`.
+The embedded manifest includes the template OS, major version, role label, build tool, ISO checksum, and UTC build date.
+
+After provisioning, Packer post-processors write local checksum and manifest artifacts under `artifacts/`. The local manifest includes the template OS, major version, role label, ISO checksum, and Packer build timestamp.
 
 ### Template finalization
 
 Packer runs `scripts/20-finalize-template.sh` before converting the VM into a template.
 
 The finalization script removes package caches, temporary files, installer logs, cloud-init state, SSH host keys, machine identity, random seed state, root SSH access, system logs, and shell/download history.
+
+System logs are vacuumed with `journalctl --rotate --vacuum-size=0`, then regular files under `/var/log` are truncated so logs written by journal rotation do not remain in the template.
 
 This helps ensure cloned VMs receive fresh identity and do not inherit build artifacts from the image build process.
 
@@ -145,7 +149,10 @@ First-boot identity, cloud-init completion, hostname/FQDN, and IPv4 DNS resoluti
 ```text
 packer/
 └── almalinux9/
-    ├── almalinux9.pkr.hcl
+    ├── build.pkr.hcl
+    ├── locals.pkr.hcl
+    ├── plugins.pkr.hcl
+    ├── source.proxmox.pkr.hcl
     ├── variables.pkr.hcl
     ├── variables.auto.pkrvars.hcl.example
     ├── homelab-platform-ci-test.pkrvars.hcl

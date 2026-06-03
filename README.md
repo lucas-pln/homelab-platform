@@ -23,7 +23,7 @@ This is a homelab portfolio project, so the repository is organized around clear
 
 - Packer builds the reusable AlmaLinux 9 Proxmox template.
 - Kickstart performs the unattended OS installation during the Packer build.
-- Packer shell provisioners add template integration packages, write build metadata, and clean build-time state.
+- Packer shell provisioners add template integration packages, write an embedded build manifest, and clean build-time state.
 - Terraform clones one disposable VM from the template and attaches cloud-init user-data.
 - cloud-init handles first-boot identity, user access, and SSH policy inside the cloned VM.
 - Ansible currently validates connectivity and first-boot clone state; it does not yet apply a post-provisioning baseline role.
@@ -36,7 +36,7 @@ This is a homelab portfolio project, so the repository is organized around clear
 | DNS/DHCP | Implemented manually | `dnsmasq` provides lab DNS and DHCP leases |
 | Image build | Implemented | Packer builds an AlmaLinux 9 VM on Proxmox |
 | OS installation | Implemented | Kickstart automates the AlmaLinux install |
-| Template cleanup | Implemented | Bash provisioners install template packages, write metadata, and finalize the image before template conversion |
+| Template cleanup | Implemented | Bash provisioners install template packages, write an embedded build manifest, and finalize the image before template conversion |
 | VM provisioning | Implemented | Terraform creates one full disposable VM clone with generated naming, tags, and cloud-init user-data |
 | First boot config | Implemented | cloud-init sets hostname, FQDN, `ansible` user access, SSH key, and root/SSH password policy |
 | Ansible tooling | Implemented | Execution environment, Proxmox dynamic inventory, connectivity validation, and clone validation exist |
@@ -53,7 +53,8 @@ The current repo can:
 - automate the minimal OS install with Kickstart
 - use DHCP during the image build
 - install `qemu-guest-agent` and `cloud-init` in the template
-- write template metadata to `/etc/template-build.json` and download a local build artifact
+- write an embedded build manifest to `/etc/template-build-manifest.json`
+- produce local checksum and manifest artifacts under `artifacts/`
 - clean the VM before converting it into a reusable template
 - clone one full disposable VM from that template with Terraform
 - upload and attach cloud-init user-data
@@ -95,14 +96,15 @@ Example lab addressing:
 4. Kickstart installs the AlmaLinux minimal environment.
 5. Packer validates root SSH access.
 6. Packer installs template integration packages.
-7. Packer writes `/etc/template-build.json` and downloads it into local build artifacts.
+7. Packer writes `/etc/template-build-manifest.json` inside the image.
 8. Packer finalizes the image by cleaning build-time state before template conversion.
-9. The VM is converted into a reusable Proxmox template.
-10. Terraform creates one full disposable VM clone from the template.
-11. Terraform uploads and attaches a cloud-init user-data snippet.
-12. cloud-init applies first-boot identity, access, and SSH policy.
-13. Ansible dynamic inventory discovers Terraform-managed running VMs by Proxmox tags.
-14. Ansible validates clone state before baseline configuration.
+9. Packer writes local checksum and manifest artifacts under `artifacts/`.
+10. The VM is converted into a reusable Proxmox template.
+11. Terraform creates one full disposable VM clone from the template.
+12. Terraform uploads and attaches a cloud-init user-data snippet.
+13. cloud-init applies first-boot identity, access, and SSH policy.
+14. Ansible dynamic inventory discovers Terraform-managed running VMs by Proxmox tags.
+15. Ansible validates clone state before baseline configuration.
 ```
 
 Ansible currently handles inventory, connectivity checks, and clone validation. A baseline configuration role is not implemented yet.
