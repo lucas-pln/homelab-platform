@@ -54,7 +54,7 @@ The current repo can:
 - use DHCP during the image build
 - install `qemu-guest-agent` and `cloud-init` in the template
 - write an embedded build manifest to `/etc/template-build-manifest.json`
-- produce local checksum and manifest artifacts under `artifacts/`
+- produce a local Packer manifest artifact under `artifacts/`
 - clean the VM before converting it into a reusable template
 - clone one full disposable VM from that template with Terraform
 - upload and attach cloud-init user-data
@@ -98,7 +98,7 @@ Example lab addressing:
 6. Packer installs template integration packages.
 7. Packer writes `/etc/template-build-manifest.json` inside the image.
 8. Packer finalizes the image by cleaning build-time state before template conversion.
-9. Packer writes local checksum and manifest artifacts under `artifacts/`.
+9. Packer writes a local manifest artifact under `artifacts/`.
 10. The VM is converted into a reusable Proxmox template.
 11. Terraform creates one full disposable VM clone from the template.
 12. Terraform uploads and attaches a cloud-init user-data snippet.

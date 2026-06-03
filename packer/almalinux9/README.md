@@ -114,7 +114,7 @@ Kickstart install
 → Install template packages
 → Write embedded build manifest
 → Finalize template
-→ Write checksum and manifest artifacts
+→ Write local manifest artifact
 → Convert VM to template
 ```
 
@@ -130,7 +130,7 @@ Packer runs `scripts/10-write-template-metadata.sh` to write `/etc/template-buil
 
 The embedded manifest includes the template OS, major version, role label, build tool, ISO checksum, and UTC build date.
 
-After provisioning, Packer post-processors write local checksum and manifest artifacts under `artifacts/`. The local manifest includes the template OS, major version, role label, ISO checksum, and Packer build timestamp.
+After provisioning, Packer writes a local manifest artifact under `artifacts/`. The local manifest includes the template OS, major version, role label, ISO checksum, and Packer build timestamp.
 
 ### Template finalization
 
