@@ -4,7 +4,7 @@
   gather_facts: true
 
   vars:
-    clone_validation_report_dir: "{{ playbook_dir }}/../artifacts/clone-validate"
+    clone_validation_report_dir: "{{ playbook_dir }}/../artifacts/validation-reports"
 
   tasks:
     - name: Read machine-id
@@ -19,7 +19,7 @@
       failed_when: false
 
     - name: Resolve host FQDN
-      ansible.builtin.command: getent ahostsv4 {{ ansible_fqdn }}
+      ansible.builtin.command: getent ahostsv4 {{ ansible_facts['fqdn'] | quote }}
       register: fqdn_resolution
       changed_when: false
       failed_when: false
@@ -34,21 +34,21 @@
     - name: Assert cloud-init completed first-boot configuration
       ansible.builtin.assert:
         that:
-          - cloud_init_status.rc == 0
-          - cloud_init_status.stdout is search("status: done")
+          - "cloud_init_status.rc == 0"
+          - "cloud_init_status.stdout is search('status: done')"
         success_msg: "cloud-init completed first-boot configuration"
         fail_msg: "cloud-init did not complete first-boot configuration"
 
     - name: Assert hostname and DNS are valid
       ansible.builtin.assert:
         that:
-          - (ansible_hostname | length) > 0
-          - ansible_hostname == inventory_hostname
-          - (ansible_fqdn | length) > (ansible_hostname | length)
-          - ansible_fqdn is match("^" ~ ansible_hostname ~ "\\.")
-          - fqdn_resolution.stdout | length > 0
-          - ansible_default_ipv4.address is defined
-          - fqdn_resolution.stdout is search(ansible_default_ipv4.address)
+          - "(ansible_facts['hostname'] | length) > 0"
+          - "ansible_facts['hostname'] == inventory_hostname"
+          - "(ansible_facts['fqdn'] | length) > (ansible_facts['hostname'] | length)"
+          - "ansible_facts['fqdn'] is match('^' ~ ansible_facts['hostname'] ~ '\\.')"
+          - "fqdn_resolution.stdout | length > 0"
+          - "ansible_facts['default_ipv4']['address'] is defined"
+          - "fqdn_resolution.stdout is search(ansible_facts['default_ipv4']['address'])"
         success_msg: "hostname, FQDN, and IPv4 name resolution are valid"
         fail_msg: "hostname, FQDN, or IPv4 name resolution is invalid"
 
@@ -76,9 +76,9 @@
 
           | Field | Value |
           | --- | --- |
-          | Hostname | {{ ansible_hostname }} |
-          | FQDN | {{ ansible_fqdn }} |
-          | IPv4 address | {{ ansible_default_ipv4.address }} |
+          | Hostname | {{ ansible_facts['hostname'] }} |
+          | FQDN | {{ ansible_facts['fqdn'] }} |
+          | IPv4 address | {{ ansible_facts['default_ipv4']['address'] }} |
 
           ## Checks
 
@@ -86,11 +86,5 @@
           | --- | --- | --- |
           | Machine ID regenerated | passed | `/etc/machine-id` is valid |
           | Cloud-init status | passed | `{{ cloud_init_status.stdout }}` |
-          | FQDN IPv4 resolution | passed | resolves to `{{ ansible_default_ipv4.address }}` |
-
-          ## DNS resolution
-
-          ```text
-          {{ fqdn_resolution.stdout | default('') }}
-          ```
+          | FQDN IPv4 resolution | passed | resolves to `{{ ansible_facts['default_ipv4']['address'] }}` |
       delegate_to: localhost
