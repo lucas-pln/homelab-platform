@@ -1,16 +1,15 @@
 #cloud-config
 hostname: "${hostname}"
 fqdn: "${fqdn}"
-manage_etc_hosts: true
 
 users:
   - name: ansible
-    groups: 
+    groups:
       - wheel
     shell: /bin/bash
     lock_passwd: true
     sudo: ALL=(ALL) NOPASSWD:ALL
-    ssh_authorized_keys: 
+    ssh_authorized_keys:
       - "${ansible_ssh_public_key}"
 
 ssh_pwauth: false
@@ -18,5 +17,3 @@ disable_root: true
 
 runcmd:
   - nmcli con up "enp6s18" || true
-    
-
