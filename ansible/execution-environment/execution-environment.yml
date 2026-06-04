@@ -17,6 +17,12 @@ dependencies:
     package_system: python3.12
     python_path: /usr/bin/python3.12
 
-#additional_build_files:
-#  - src: configs/ansible.cfg
-#    dest: configs
+additional_build_files:
+  - src: proxmox-pve-root-ca.crt
+    dest: certs
+
+additional_build_steps:
+  append_final:
+    - COPY _build/certs/proxmox-pve-root-ca.crt /etc/pki/ca-trust/source/anchors/proxmox-pve-root-ca.crt
+    - RUN cat /etc/pki/ca-trust/source/anchors/proxmox-pve-root-ca.crt >> $(python3.12 -c "import certifi; print(certifi.where())")
+    - RUN update-ca-trust

@@ -1,11 +1,10 @@
 ---
 plugin: community.proxmox.proxmox
 
-url: "{{ lookup('env', 'PROXMOX_ANSIBLE_PROXMOX_URL') }}"
-user: "{{ lookup('env', 'PROXMOX_ANSIBLE_USER') }}"
-token_id: "{{ lookup('env', 'PROXMOX_ANSIBLE_TOKEN_ID') }}"
-token_secret: "{{ lookup('env', 'PROXMOX_ANSIBLE_TOKEN_SECRET') }}"
-validate_certs: false
+url: "{{ lookup('env', 'ANSIBLE_PROXMOX_URL') }}"
+user: "{{ lookup('env', 'ANSIBLE_PROXMOX_USER') }}"
+token_id: "{{ lookup('env', 'ANSIBLE_PROXMOX_TOKEN_ID') }}"
+token_secret: "{{ lookup('env', 'ANSIBLE_PROXMOX_TOKEN_SECRET') }}"
 
 exclude_nodes: true
 

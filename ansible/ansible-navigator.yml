@@ -10,10 +10,10 @@ ansible-navigator:
     container-engine: podman
     environment-variables:
       pass:
-      - PROXMOX_ANSIBLE_PROXMOX_URL
-      - PROXMOX_ANSIBLE_USER
-      - PROXMOX_ANSIBLE_TOKEN_ID
-      - PROXMOX_ANSIBLE_TOKEN_SECRET
+      - ANSIBLE_PROXMOX_URL
+      - ANSIBLE_PROXMOX_USER
+      - ANSIBLE_PROXMOX_TOKEN_ID
+      - ANSIBLE_PROXMOX_TOKEN_SECRET
     image: localhost/homelab-ansible-ee:1.0.0
     pull:
       policy: never
