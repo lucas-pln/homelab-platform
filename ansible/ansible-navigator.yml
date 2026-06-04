@@ -20,7 +20,8 @@ ansible-navigator:
   mode: stdout
   playbook-artifact:
     enable: true
-    save-as: "artifacts/{playbook_name}-artifact-{time_stamp}.json"
+    save-as: "artifacts/{playbook_name}/{time_stamp}.json"
   logging:
     level: warning
     file: "ansible-navigator.log"
+  time-zone: Europe/Paris
