@@ -19,7 +19,7 @@ This repository tracks a small Proxmox automation workflow: build an AlmaLinux t
 
 ## How To Read This Repo
 
-This is a homelab portfolio project, so the repository is organized around clear ownership boundaries rather than a single all-in-one automation script:
+The repository is organized around clear ownership boundaries rather than a single all-in-one automation script:
 
 - Packer builds the reusable AlmaLinux 9 Proxmox template.
 - Kickstart performs the unattended OS installation during the Packer build.
@@ -33,7 +33,7 @@ This is a homelab portfolio project, so the repository is organized around clear
 
 | Component | State | Notes |
 |---|---|---|
-| DNS/DHCP | Implemented manually | `dnsmasq` provides lab DNS and DHCP leases |
+| DNS/DHCP | External/manual lab dependency | `dnsmasq` provides lab DNS and DHCP leases outside this repository |
 | Image build | Implemented | Packer builds an AlmaLinux 9 VM on Proxmox |
 | OS installation | Implemented | Kickstart automates the AlmaLinux install |
 | Template cleanup | Implemented | Bash provisioners install template packages, write an embedded build manifest, and finalize the image before template conversion |
@@ -54,7 +54,7 @@ The current repo can:
 - use DHCP during the image build
 - install `qemu-guest-agent` and `cloud-init` in the template
 - write an embedded build manifest to `/etc/template-build-manifest.json`
-- produce a local Packer manifest artifact under `artifacts/`
+- produce a local Packer manifest artifact under `packer/almalinux9/artifacts/`
 - clean the VM before converting it into a reusable template
 - clone one full disposable VM from that template with Terraform
 - upload and attach cloud-init user-data
@@ -98,7 +98,7 @@ Example lab addressing:
 6. Packer installs template integration packages.
 7. Packer writes `/etc/template-build-manifest.json` inside the image.
 8. Packer finalizes the image by cleaning build-time state before template conversion.
-9. Packer writes a local manifest artifact under `artifacts/`.
+9. Packer writes a local manifest artifact under `packer/almalinux9/artifacts/`.
 10. The VM is converted into a reusable Proxmox template.
 11. Terraform creates one full disposable VM clone from the template.
 12. Terraform uploads and attaches a cloud-init user-data snippet.
@@ -113,6 +113,7 @@ Ansible currently handles inventory, connectivity checks, and clone validation. 
 
 ```text
 .
+├── .github/workflows/    # CI validation workflow
 ├── ansible/              # Execution environment, inventory, and validation playbooks
 ├── packer/
 │   └── almalinux9/       # AlmaLinux 9 Proxmox template build
@@ -120,6 +121,7 @@ Ansible currently handles inventory, connectivity checks, and clone validation. 
 ├── .env.example          # Example local environment variables
 ├── .envrc                # direnv loader
 ├── .gitignore
+├── AGENTS.md             # Agent rules for documentation sync to private Obsidian
 └── README.md
 ```
 

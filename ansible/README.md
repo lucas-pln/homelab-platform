@@ -2,7 +2,9 @@
 
 This directory contains the Ansible automation for the homelab platform.
 
-The current scope is Ansible configuration, ansible-navigator setup, a local execution environment definition, Proxmox dynamic inventory, connectivity checks, and clone validation. It does not include a baseline configuration role yet.
+The current scope is a local execution environment definition and ansible-navigator setup, a Proxmox dynamic inventory and clone validation. 
+
+It does not include a baseline configuration role yet.
 
 ## Current State
 
@@ -13,7 +15,7 @@ This directory currently provides:
 - a Podman-based execution environment definition
 - pinned Galaxy collections and Python dependencies
 - Proxmox dynamic inventory using `community.proxmox.proxmox`
-- a `ping.yml` playbook for validating managed host connectivity
+- a `ping.yml` playbook for quick validation of managed host connectivity
 - a `clone-validate.yml` playbook for validating newly provisioned clones before baseline configuration
 
 ## Playbooks
@@ -38,18 +40,20 @@ It validates:
 The playbook writes a local report under:
 
 ```text
-artifacts/clone-validate/
+artifacts/validation-reports/
 ```
+
+`ansible-navigator` also writes playbook artifacts under `artifacts/{playbook_name}/{time_stamp}.json`.
 
 ## Authentication
 
 The Proxmox dynamic inventory reads credentials from environment variables:
 
 ```bash
-PROXMOX_ANSIBLE_PROXMOX_URL
-PROXMOX_ANSIBLE_USER
-PROXMOX_ANSIBLE_TOKEN_ID
-PROXMOX_ANSIBLE_TOKEN_SECRET
+ANSIBLE_PROXMOX_URL
+ANSIBLE_PROXMOX_USER
+ANSIBLE_PROXMOX_TOKEN_ID
+ANSIBLE_PROXMOX_TOKEN_SECRET
 ```
 
 No real Proxmox credentials, API tokens, SSH keys, or generated artifacts committed.

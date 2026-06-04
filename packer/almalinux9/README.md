@@ -93,7 +93,7 @@ Kickstart installs only the AlmaLinux minimal environment:
 @^minimal-environment
 ```
 
-Packer then installs the template integration packages currently required by the clone workflow:
+Packer then installs the packages required for the disposable clone workflow:
 
 ```text
 qemu-guest-agent
@@ -130,7 +130,7 @@ Packer runs `scripts/10-write-template-metadata.sh` to write `/etc/template-buil
 
 The embedded manifest includes the template OS, major version, role label, build tool, ISO checksum, and UTC build date.
 
-After provisioning, Packer writes a local manifest artifact under `artifacts/`. The local manifest includes the template OS, major version, role label, ISO checksum, and Packer build timestamp.
+After provisioning, Packer writes a local manifest artifact under `packer/almalinux9/artifacts/`. The local manifest includes the template OS, major version, role label, ISO checksum, and Packer build timestamp.
 
 ### Template finalization
 
@@ -185,13 +185,11 @@ Current temporary choices:
 
 Short-term:
 
-- Add deeper image promotion checks before templates are consumed by Terraform.
-- Improve documentation around the Kickstart, Packer provisioner, and cleanup responsibilities.
+- Generate a temporary SSH keypair per build instead of relying on a static local build key.
+- Inject the temporary public key dynamically into Kickstart during the build.
 
 Later improvements:
 
 - Add Secure Boot support.
-- Generate a temporary SSH keypair per build instead of relying on a static local build key.
-- Inject the temporary public key dynamically into Kickstart during the build.
 - Run Packer builds from a CI/CD pipeline instead of a manual shell session.
 - Scan, test, and promote templates before they are used by Terraform.

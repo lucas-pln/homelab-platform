@@ -21,7 +21,7 @@ This configuration currently handles:
 - cloud-init attachment
 - VM startup after provisioning
 - Proxmox tags for Ansible dynamic inventory discovery
-- VM hostname, FQDN, and IPv4 outputs
+- VM FQDN, IPv4 address, and tag outputs
 
 It currently provisions one full-clone disposable VM.
 
