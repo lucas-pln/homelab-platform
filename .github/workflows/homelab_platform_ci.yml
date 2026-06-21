@@ -3,9 +3,6 @@ name: homelab-platform CI
 permissions:
   contents: read
 
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
-
 on:
   push:
     branches: ["main"]
@@ -26,7 +23,7 @@ jobs:
         uses: actions/checkout@v5
 
       - name: Setup Packer
-        uses: hashicorp/setup-packer@v3.2.0
+        uses: hashicorp/setup-packer@v3.3.0
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v4
