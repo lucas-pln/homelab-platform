@@ -3,19 +3,11 @@ version: 3
 
 images:
   base_image:
-    name: registry.redhat.io/ubi9/ubi@sha256:151fc1b2c976f198779d740851436544fdf4e9449ccb4a47e2d0faad34f1733b
+    name: ghcr.io/ansible-community/community-ee-minimal:2.20.6-1@sha256:ea7f2f7d853d4ab99f7c169e515dc5f836aa614bdb0c4ec83373a4f922f687e8
 
 dependencies:
-  ansible_core:
-    package_pip: ansible-core==2.20.6
-  ansible_runner:
-    package_pip: ansible-runner==2.4.3
   galaxy: requirements.yml
   python: requirements.txt
-  system: bindep.txt
-  python_interpreter:
-    package_system: python3.12
-    python_path: /usr/bin/python3.12
 
 additional_build_files:
   - src: proxmox-pve-root-ca.crt
@@ -24,5 +16,5 @@ additional_build_files:
 additional_build_steps:
   append_final:
     - COPY _build/certs/proxmox-pve-root-ca.crt /etc/pki/ca-trust/source/anchors/proxmox-pve-root-ca.crt
-    - RUN cat /etc/pki/ca-trust/source/anchors/proxmox-pve-root-ca.crt >> $(python3.12 -c "import certifi; print(certifi.where())")
     - RUN update-ca-trust
+    - ENV REQUESTS_CA_BUNDLE=/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem

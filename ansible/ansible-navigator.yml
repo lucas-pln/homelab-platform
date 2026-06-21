@@ -14,7 +14,7 @@ ansible-navigator:
       - ANSIBLE_PROXMOX_USER
       - ANSIBLE_PROXMOX_TOKEN_ID
       - ANSIBLE_PROXMOX_TOKEN_SECRET
-    image: localhost/homelab-ansible-ee:1.0.0
+    image: localhost/ansible-execution-env:latest
     pull:
       policy: never
   mode: stdout
