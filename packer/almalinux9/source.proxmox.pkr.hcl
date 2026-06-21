@@ -52,4 +52,6 @@ source "proxmox-iso" "almalinux9" {
   http_port_min  = var.http_port_min
   http_port_max  = var.http_port_max
   qemu_agent     = true
+
+  tags = var.tags
 }

@@ -210,3 +210,9 @@ variable "template_role" {
   description = "Role label written into build manifest during provisioning."
   default     = "role-neutral"
 }
+
+variable "tags" {
+  type        = string
+  description = "Tags assigned to the Packer build"
+  default     = "template;managed_by_packer;os_almalinux9"
+}
