@@ -15,5 +15,11 @@ users:
 ssh_pwauth: false
 disable_root: true
 
+# [Workaround] Re-apply active connections after hostname setup to refresh DNS registration
 runcmd:
-  - nmcli con up "enp6s18" || true
+  - |
+    nmcli -t -f NAME,DEVICE con show --active | while IFS=: read -r name device; do
+      [ "$device" = "lo" ] && continue
+      [ -z "$device" ] && continue
+      nmcli con up "$name" || true
+    done
