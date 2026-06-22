@@ -2,7 +2,7 @@ provider "proxmox" {
 
   ssh {
     agent    = true
-    username = "root"
+    username = "terraform-upload"
 
     node {
       name    = var.node_name
