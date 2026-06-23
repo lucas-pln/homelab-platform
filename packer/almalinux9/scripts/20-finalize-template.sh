@@ -11,49 +11,63 @@ fail() {
 }
 
 template_cleanup() {
-dnf clean all
-rm -rf /var/cache/dnf/*
-ok "Cleaned package manager cache"
+  dnf clean all
+  rm -rf /var/cache/dnf/*
+  ok "Cleaned package manager cache"
 
-find /tmp /var/tmp -mindepth 1 -exec rm -rf {} +
-ok "Cleaned temporary files"
+  find /tmp /var/tmp -mindepth 1 -exec rm -rf {} +
+  ok "Cleaned temporary files"
 
-rm -f /root/anaconda-ks.cfg
-rm -f /root/original-ks.cfg
-ok "Removed installer/build logs"
+  rm -f /root/anaconda-ks.cfg
+  rm -f /root/original-ks.cfg
+  ok "Removed installer/build logs"
 
-cloud-init clean --logs --seed
-ok "Cleaned cloud-init state"
+  cloud-init clean --logs --seed
+  ok "Cleaned cloud-init state"
 
-truncate -s 0 /etc/machine-id
+  truncate -s 0 /etc/machine-id
 
-if [ -d /var/lib/dbus ]; then
-  rm -f /var/lib/dbus/machine-id
-  ln -s /etc/machine-id /var/lib/dbus/machine-id
-fi
+  if [ -d /var/lib/dbus ]; then
+    rm -f /var/lib/dbus/machine-id
+    ln -s /etc/machine-id /var/lib/dbus/machine-id
+  fi
 
-rm -f /var/lib/systemd/random-seed
-ok "Reset machine identity"
+  rm -f /var/lib/systemd/random-seed
+  ok "Reset machine identity"
 
-rm -f /etc/ssh/ssh_host_*_key
-rm -f /etc/ssh/ssh_host_*_key.pub
-ok "Removed SSH host keys"
+  rm -f /etc/ssh/ssh_host_*_key
+  rm -f /etc/ssh/ssh_host_*_key.pub
+  ok "Removed SSH host keys"
 
-rm -rf /root/.ssh
-ok "Removed temporary root access"
+  rm -rf /root/.ssh
+  ok "Removed root SSH directory"
 
-journalctl --rotate --vacuum-size=0
-find /var/log -type f -exec truncate -s 0 {} +
-ok "Cleaned system logs"
+  rm -f /etc/sudoers.d/packer
+  ok "Removed temporary packer sudo access"
 
-rm -f /root/.wget-hsts
-rm -f /root/.bash_history
+  if getent passwd packer >/dev/null 2>&1; then
+    userdel -r -f packer
+  fi
 
-unset HISTFILE
-history -c || true
-ok "Cleaned shell and download history"
+  if getent passwd packer >/dev/null 2>&1; then
+    fail "packer user still exists after userdel"
+  fi
+  ok "Removed packer user"
 
-ok "Cleanup completed"
+  ok "Cleanup completed"
+}
+
+log_cleanup() {
+  journalctl --rotate --vacuum-size=0
+  find /var/log -type f -exec truncate -s 0 {} +
+  ok "Cleaned system logs"
+
+  rm -f /root/.wget-hsts
+  rm -f /root/.bash_history
+
+  unset HISTFILE
+  history -c || true
+  ok "Cleaned shell and download history"
 }
 
 template_validation() {
@@ -69,7 +83,7 @@ template_validation() {
   ok "Validated installer/build logs are removed"
 
   [[ ! -d /root/.ssh ]] || fail "/root/.ssh is still present"
-  ok "Validated temporary root access is removed"
+  ok "Validated root SSH directory is removed"
 
   [[ -z "$(find /var/lib/cloud -mindepth 1 -print -quit)" ]] || fail "/var/lib/cloud still contains cloud-init state"
   ok "Validated cloud-init state is clean"
@@ -93,14 +107,27 @@ template_validation() {
   [[ ! -f /root/.bash_history ]] || fail "/root/.bash_history is still present"
   ok "Validated shell and download history are removed"
 
+  if getent passwd packer >/dev/null 2>&1; then
+    fail "packer user still exists"
+  fi
+  ok "Validated Packer user deletion"
+
+  [[ ! -e /etc/sudoers.d/packer ]] || fail "/etc/sudoers.d/packer still exists"
+  ok "Validated Packer sudoers file deletion"
+
+  [[ ! -d /home/packer ]] || fail "/home/packer still exists"
+  ok "Validated Packer home dir deletion"
+
   ok "Template validated"
 }
 
 main() {
   template_cleanup
+  log_cleanup
   template_validation
 
   sync
+  systemctl poweroff
 }
 
 main "$@"

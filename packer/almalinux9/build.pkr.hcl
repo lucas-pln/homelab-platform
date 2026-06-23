@@ -3,11 +3,13 @@ build {
   sources = ["source.proxmox-iso.almalinux9"]
 
   provisioner "shell" {
-    scripts = ["scripts/00-install-template-packages.sh"]
+    script          = "scripts/00-install-template-packages.sh"
+    execute_command = "chmod +x {{ .Path }}; sudo {{ .Path }}"
   }
 
   provisioner "shell" {
-    scripts = ["scripts/10-write-template-metadata.sh"]
+    script          = "scripts/10-write-template-metadata.sh"
+    execute_command = "chmod +x {{ .Path }}; sudo env {{ .Vars }} {{ .Path }}"
 
     environment_vars = [
       "TEMPLATE_OS=${var.template_os}",
@@ -18,7 +20,11 @@ build {
   }
 
   provisioner "shell" {
-    scripts = ["scripts/20-finalize-template.sh"]
+    script            = "scripts/20-finalize-template.sh"
+    remote_path       = "/home/packer/packer-finalize-template.sh"
+    execute_command   = "chmod +x {{ .Path }}; sudo {{ .Path }}"
+    skip_clean        = true
+    expect_disconnect = true
   }
 
   post-processor "manifest" {

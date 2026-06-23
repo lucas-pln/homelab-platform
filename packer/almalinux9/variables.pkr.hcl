@@ -160,7 +160,7 @@ variable "communicator" {
 variable "ssh_username" {
   type        = string
   description = "SSH user used by Packer provisioners."
-  default     = "root"
+  default     = "packer"
 }
 
 variable "private_key_file" {
