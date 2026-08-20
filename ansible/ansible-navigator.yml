@@ -5,15 +5,15 @@ ansible-navigator:
       path: ./ansible.cfg
     inventory:
       entries:
-      - ./inventory/proxmox.proxmox.yml
+        - ./inventories/proxmox.proxmox.yml
   execution-environment:
     container-engine: podman
     environment-variables:
       pass:
-      - ANSIBLE_PROXMOX_URL
-      - ANSIBLE_PROXMOX_USER
-      - ANSIBLE_PROXMOX_TOKEN_ID
-      - ANSIBLE_PROXMOX_TOKEN_SECRET
+        - ANSIBLE_PROXMOX_URL
+        - ANSIBLE_PROXMOX_USER
+        - ANSIBLE_PROXMOX_TOKEN_ID
+        - ANSIBLE_PROXMOX_TOKEN_SECRET
     image: localhost/ansible-execution-env:latest
     pull:
       policy: never
@@ -22,6 +22,6 @@ ansible-navigator:
     enable: true
     save-as: "artifacts/{playbook_name}/{time_stamp}.json"
   logging:
-    level: warning
+    level: critical
     file: "ansible-navigator.log"
   time-zone: Europe/Paris
