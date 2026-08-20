@@ -4,7 +4,7 @@ collections:
     version: "1.125.2"
   - name: ansible.posix
     version: "2.2.0"
-  - name: community.proxmox
-    version: "2.0.0"
   - name: community.general
     version: "11.4.8"
+  - name: community.proxmox
+    version: "2.0.0"
