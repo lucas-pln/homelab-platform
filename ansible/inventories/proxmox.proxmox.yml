@@ -16,6 +16,6 @@ filters:
   - "'env_lab' in (proxmox_tags | default('')).split(';')"
 
 groups:
-    terraform_managed: "'managed_by_terraform' in (proxmox_tags | default('')).split(';')"
-    almalinux9: "'os_almalinux9' in (proxmox_tags | default('')).split(';')"
-    lab: "'env_lab' in (proxmox_tags | default('')).split(';')"
+  terraform_managed: "'managed_by_terraform' in (proxmox_tags | default('')).split(';')"
+  almalinux9: "'os_almalinux9' in (proxmox_tags | default('')).split(';')"
+  lab: "'env_lab' in (proxmox_tags | default('')).split(';')"
