@@ -1,0 +1,19 @@
+---
+- name: Firewall is installed
+  ansible.builtin.package:
+    name: firewalld
+    state: present
+
+- name: Firewall is started and running
+  ansible.builtin.service:
+    name: firewalld
+    state: started
+    enabled: true
+
+- name: Baseline services are allowed
+  ansible.posix.firewalld:
+    service: "{{ item }}"
+    state: enabled
+    immediate: true
+    permanent: true
+  loop: "{{ baseline_firewall_services }}"

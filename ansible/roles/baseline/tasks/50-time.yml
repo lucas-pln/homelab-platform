@@ -1,0 +1,15 @@
+---
+- name: Timezone is set
+  community.general.timezone:
+    name: "{{ baseline_timezone }}"
+
+- name: Chrony is present
+  ansible.builtin.dnf:
+    name: chrony
+    state: present
+
+- name: Chronyd is enabled and running
+  ansible.builtin.service:
+    name: chronyd
+    state: started
+    enabled: true

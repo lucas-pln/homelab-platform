@@ -1,0 +1,5 @@
+---
+- name: Managed packages are present
+  ansible.builtin.dnf:
+    name: "{{ baseline_packages }}"
+    state: present

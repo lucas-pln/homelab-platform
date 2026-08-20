@@ -1,0 +1,7 @@
+---
+- name: Apply the AlmaLinux baseline
+  hosts: terraform_managed
+  gather_facts: true
+
+  roles:
+    - role: baseline

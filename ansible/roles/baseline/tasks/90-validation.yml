@@ -1,0 +1,27 @@
+---
+- name: Complete SSH configuration is valid
+  ansible.builtin.command: /usr/sbin/sshd -t
+  changed_when: false
+
+- name: Read effective SSH configuration
+  ansible.builtin.command: /usr/sbin/sshd -T
+  register: baseline_sshd_effective
+  changed_when: false
+
+- name: SSH hardening settings are active
+  ansible.builtin.assert:
+    that:
+      - "'permitrootlogin no' in baseline_sshd_effective['stdout_lines']"
+      - "'passwordauthentication no' in baseline_sshd_effective['stdout_lines']"
+      - "'kbdinteractiveauthentication no' in baseline_sshd_effective['stdout_lines']"
+      - "'authenticationmethods publickey' in baseline_sshd_effective['stdout_lines']"
+    fail_msg: The effective SSH configuration does not match the baseline policy
+
+- name: Apply pending SSH changes
+  ansible.builtin.meta: flush_handlers
+
+- name: Reset the SSH connection after hardening
+  ansible.builtin.meta: reset_connection
+
+- name: Ansible connectivity is available after SSH hardening
+  ansible.builtin.ping:

@@ -1,0 +1,21 @@
+---
+# Packages
+baseline_packages:
+  - vim
+  - bash-completion
+  - bind-utils
+  - git
+  - wget
+  - tar
+  - unzip
+
+# Users and groups
+baseline_groups: []
+baseline_users: []
+
+# Time
+baseline_timezone: Europe/Paris
+
+# Firewall
+baseline_firewall_services:
+  - ssh

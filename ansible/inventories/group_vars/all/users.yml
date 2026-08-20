@@ -1,0 +1,26 @@
+---
+baseline_groups:
+  - dev
+  - ops
+
+baseline_users:
+  - name: admin
+    groups:
+      - wheel
+    shell: /bin/bash
+    create_home: true
+    ssh_public_key_file: admin.pub
+
+  - name: alice
+    groups:
+      - dev
+    shell: /bin/bash
+    create_home: true
+    ssh_public_key_file: alice.pub
+
+  - name: bob
+    groups:
+      - ops
+    shell: /bin/bash
+    create_home: true
+    ssh_public_key_file: bob.pub

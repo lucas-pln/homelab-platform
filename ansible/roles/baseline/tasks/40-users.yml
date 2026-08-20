@@ -1,0 +1,24 @@
+---
+- name: Managed groups are present
+  ansible.builtin.group:
+    name: "{{ item }}"
+    state: present
+  loop: "{{ baseline_groups }}"
+
+- name: Managed users are present
+  ansible.builtin.user:
+    name: "{{ item['name'] }}"
+    groups: "{{ item['groups'] | default(omit) }}"
+    append: true
+    shell: "{{ item['shell'] | default('/bin/bash') }}"
+    create_home: "{{ item['create_home'] | default(true) | bool }}"
+    password_lock: true
+    state: present
+  loop: "{{ baseline_users }}"
+
+- name: Managed keys are installed
+  ansible.posix.authorized_key:
+    user: "{{ item['name'] }}"
+    key: "{{ lookup('file', role_path ~ '/files/ssh_keys/' ~ item['ssh_public_key_file']) }}"
+    state: present
+  loop: "{{ baseline_users }}"

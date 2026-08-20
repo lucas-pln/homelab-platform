@@ -1,0 +1,12 @@
+---
+- name: Ensure SELinux is enforcing
+  ansible.posix.selinux:
+    state: enforcing
+    policy: targeted
+  register: baseline_selinux_result
+
+- name: Reboot when required by SELinux
+  ansible.builtin.reboot:
+    msg: "Reboot initiated by Ansible after changing SELinux configuration"
+    reboot_timeout: 600
+  when: baseline_selinux_result['reboot_required'] | bool

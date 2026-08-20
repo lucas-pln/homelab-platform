@@ -1,0 +1,56 @@
+---
+- name: AlmaLinux 9 is detected
+  ansible.builtin.assert:
+    that:
+      - ansible_facts['distribution'] == 'AlmaLinux'
+      - ansible_facts['distribution_major_version'] == '9'
+    fail_msg: This baseline supports AlmaLinux 9 only
+
+- name: Baseline is running with root privileges
+  ansible.builtin.assert:
+    that:
+      - ansible_facts['user_id'] == 'root'
+    fail_msg: The baseline role requires become privileges
+
+- name: Inspect user definitions
+  ansible.builtin.assert:
+    that:
+      - item['name'] is defined
+      - item['name'] | length > 0
+      - item['ssh_public_key_file'] is defined
+      - item['ssh_public_key_file'] | length > 0
+  loop: "{{ baseline_users }}"
+  loop_control:
+    label: "{{ item['name'] | default('undefined user') }}"
+
+- name: At least one administrative user is configured
+  ansible.builtin.assert:
+    that:
+      - baseline_users
+        | selectattr('groups', 'defined')
+        | selectattr('groups', 'contains', 'wheel')
+        | list | length > 0
+    fail_msg: At least one baseline user must belong to wheel
+
+- name: Inspect public keys
+  ansible.builtin.stat:
+    path: "{{ role_path }}/files/ssh_keys/{{ item['ssh_public_key_file'] }}"
+  loop: "{{ baseline_users }}"
+  loop_control:
+    label: "{{ item['name'] }}"
+  register: baseline_public_key_files
+  delegate_to: localhost
+  become: false
+
+- name: Public keys exist and are regular files
+  ansible.builtin.assert:
+    that:
+      - key_result['stat']['exists']
+      - key_result['stat']['isreg']
+      - key_result['stat']['size'] | int > 0
+    fail_msg: "Missing or empty public key for {{ key_result['item']['name'] }}"
+    quiet: true
+  loop: "{{ baseline_public_key_files['results'] }}"
+  loop_control:
+    loop_var: key_result
+    label: "{{ key_result['item']['name'] }}"
