@@ -5,7 +5,7 @@ resource "random_pet" "vm_name" {
 }
 
 resource "random_id" "disk_serial" {
-  byte_length = 10
+  byte_length = 8
 }
 
 locals {
