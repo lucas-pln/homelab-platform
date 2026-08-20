@@ -35,8 +35,8 @@ variable "clone_vm_id" {
 
 variable "clone_full" {
   type        = bool
-  description = "Whether the Proxmox clone is created as a full clone."
-  default     = true
+  description = "Whether the Proxmox clone is created as a full or linked clone."
+  default     = false
 }
 
 variable "clone_datastore_id" {

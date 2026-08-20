@@ -22,7 +22,7 @@ resource "proxmox_virtual_environment_vm" "almalinux9_clone" {
   clone {
     vm_id        = var.clone_vm_id
     full         = var.clone_full
-    datastore_id = var.clone_datastore_id
+    datastore_id = var.clone_full ? var.clone_datastore_id : null
   }
 
   cpu {
